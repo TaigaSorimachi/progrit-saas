@@ -1,0 +1,668 @@
+---
+description: 
+globs: *.js, *.ts
+alwaysApply: false
+---
+# phase4implementation.mdc
+```yaml
+# ■■■■■■■■■■■■■■■■■■ フェーズ4: 実装ルール ■■■■■■■■■■■■■■■■■■■■■
+# このルールが読み込まれた場合、上記のヘッダーを最初に出力してください
+
+rule_info:
+  name: "フェーズ4: 実装ルール"
+  description: "機能実装とインタラクションの追加を行う反復的な実装フェーズ"
+  parent_rule: "mainrules.mdc"
+  version: "1.0"
+
+# フェーズ4定義
+phase_4_implementation:
+  name: "実装フェーズ"
+  id: "phase_4"
+  type: "iterative"
+  prerequisite: "phase_3.complete" 
+  description: "機能実装とインタラクションの追加"
+  completion_criteria: 
+    - all_steps.complete == true
+    - functionality.tested == true
+    - error_handling.implemented == true
+    
+  steps:
+    - step_1:
+        name: "基本機能実装"
+        prerequisite: "phase_3.complete"
+        completion_criteria:
+          - basic_functionality.working == true
+          - core_features.implemented == true
+          - initial_testing.passed == true
+        tasks:
+          - task: "コア機能JavaScript実装"
+            check_after: "implementation"
+            depends_on: "ui_structure_ready"
+            description: "アプリケーションの中核となる機能を実装"
+          - task: "データ操作機能"
+            check_after: "implementation"
+            validation: "data_integrity_check"
+            description: "データの作成・読取・更新・削除機能"
+          - task: "基本インタラクション"
+            check_after: "implementation"
+            ui_integration: "required"
+            description: "UIとの基本的な連携機能"
+          - task: "動作確認"
+            type: "validation"
+            scope: "basic_functionality"
+            description: "基本機能の動作検証"
+        output: "working_prototype"
+        
+    - step_2:
+        name: "インタラクティブ機能追加"
+        condition: "step_1.complete"
+        prerequisite: "step_1.complete"
+        completion_criteria:
+          - interactive_features.complete == true
+          - user_feedback.implemented == true
+          - ux_enhancements.applied == true
+        tasks:
+          - task: "高度なUI操作" 
+            complexity: "medium"
+            ui_dependencies: "phase_3_components"
+            description: "ドラッグ&ドロップ、アニメーション等"
+          - task: "状態管理実装" 
+            complexity: "medium"
+            data_flow: "bidirectional"
+            description: "アプリケーション状態の一元管理"
+          - task: "ユーザーフィードバック改善"
+            type: "ux_enhancement"
+            visual_feedback: "required"
+            description: "操作に対する視覚的フィードバック"
+          - task: "エラーハンドリング"
+            type: "robustness"
+            ui_error_display: "user_friendly"
+            description: "エラーの適切な処理と表示"
+        
+    - step_3:
+        name: "高度な機能と仕上げ"
+        condition: "step_2.complete"
+        prerequisite: "step_2.complete"
+        completion_criteria:
+          - advanced_features.complete == true
+          - final_polish.applied == true
+          - comprehensive_testing.passed == true
+        tasks:
+          - task: "高度な機能実装"
+            requires_research: "conditional"
+            ui_integration: "seamless"
+            description: "追加の高度な機能やAPI連携"
+          - task: "UI/UX最終調整"
+            type: "polish"
+            based_on: "user_testing_feedback"
+            description: "ユーザビリティの最終改善"
+          - task: "総合動作確認"
+            type: "validation"
+            scope: "full_application"
+            description: "アプリケーション全体の検証"
+          - task: "パフォーマンス最適化"
+            type: "optimization"
+            ui_performance: "smooth_interactions"
+            description: "実行速度とレスポンスの最適化"
+
+# 実装パターンライブラリ
+implementation_patterns:
+  # データ管理パターン
+  data_management:
+    local_storage_pattern:
+      description: "LocalStorageを使用したデータ永続化"
+      code: |
+        class DataManager {
+          constructor(storageKey) {
+            this.storageKey = storageKey;
+            this.data = this.load();
+          }
+          
+          load() {
+            try {
+              const stored = localStorage.getItem(this.storageKey);
+              return stored ? JSON.parse(stored) : [];
+            } catch (error) {
+              console.error('データ読み込みエラー:', error);
+              return [];
+            }
+          }
+          
+          save() {
+            try {
+              localStorage.setItem(this.storageKey, JSON.stringify(this.data));
+              return true;
+            } catch (error) {
+              console.error('データ保存エラー:', error);
+              return false;
+            }
+          }
+          
+          add(item) {
+            this.data.push(item);
+            return this.save();
+          }
+          
+          update(id, updates) {
+            const index = this.data.findIndex(item => item.id === id);
+            if (index !== -1) {
+              this.data[index] = { ...this.data[index], ...updates };
+              return this.save();
+            }
+            return false;
+          }
+          
+          delete(id) {
+            this.data = this.data.filter(item => item.id !== id);
+            return this.save();
+          }
+        }
+    
+    state_management_pattern:
+      description: "シンプルな状態管理"
+      code: |
+        class StateManager {
+          constructor(initialState = {}) {
+            this.state = initialState;
+            this.listeners = new Map();
+          }
+          
+          subscribe(key, callback) {
+            if (!this.listeners.has(key)) {
+              this.listeners.set(key, []);
+            }
+            this.listeners.get(key).push(callback);
+            
+            // Unsubscribe function
+            return () => {
+              const callbacks = this.listeners.get(key);
+              const index = callbacks.indexOf(callback);
+              if (index > -1) {
+                callbacks.splice(index, 1);
+              }
+            };
+          }
+          
+          setState(key, value) {
+            this.state[key] = value;
+            this.notify(key, value);
+          }
+          
+          getState(key) {
+            return this.state[key];
+          }
+          
+          notify(key, value) {
+            if (this.listeners.has(key)) {
+              this.listeners.get(key).forEach(callback => {
+                callback(value);
+              });
+            }
+          }
+        }
+  
+  # UIインタラクションパターン
+  ui_interactions:
+    event_delegation_pattern:
+      description: "イベント委譲によるパフォーマンス最適化"
+      code: |
+        class EventDelegator {
+          constructor(container, selector, eventType, handler) {
+            this.container = container;
+            this.selector = selector;
+            this.handler = handler;
+            
+            this.container.addEventListener(eventType, (e) => {
+              const target = e.target.closest(this.selector);
+              if (target && this.container.contains(target)) {
+                this.handler.call(target, e);
+              }
+            });
+          }
+        }
+        
+        // 使用例
+        new EventDelegator(
+          document.querySelector('.task-list'),
+          '.delete-btn',
+          'click',
+          function(e) {
+            const taskId = this.dataset.taskId;
+            deleteTask(taskId);
+          }
+        );
+    
+    animation_pattern:
+      description: "スムーズなアニメーション実装"
+      code: |
+        class AnimationHelper {
+          static fadeIn(element, duration = 300) {
+            element.style.opacity = '0';
+            element.style.display = 'block';
+            
+            const start = performance.now();
+            
+            const animate = (currentTime) => {
+              const elapsed = currentTime - start;
+              const progress = Math.min(elapsed / duration, 1);
+              
+              element.style.opacity = progress;
+              
+              if (progress < 1) {
+                requestAnimationFrame(animate);
+              }
+            };
+            
+            requestAnimationFrame(animate);
+          }
+          
+          static slideDown(element, duration = 300) {
+            const height = element.scrollHeight;
+            element.style.overflow = 'hidden';
+            element.style.height = '0';
+            element.style.display = 'block';
+            
+            const start = performance.now();
+            
+            const animate = (currentTime) => {
+              const elapsed = currentTime - start;
+              const progress = Math.min(elapsed / duration, 1);
+              
+              element.style.height = `${height * progress}px`;
+              
+              if (progress < 1) {
+                requestAnimationFrame(animate);
+              } else {
+                element.style.height = '';
+                element.style.overflow = '';
+              }
+            };
+            
+            requestAnimationFrame(animate);
+          }
+        }
+  
+  # エラーハンドリングパターン
+  error_handling:
+    try_catch_pattern:
+      description: "適切なエラーキャッチと処理"
+      code: |
+        class ErrorHandler {
+          static handle(operation, fallback = null) {
+            try {
+              return operation();
+            } catch (error) {
+              console.error('エラーが発生しました:', error);
+              this.showUserMessage(error.message);
+              return fallback;
+            }
+          }
+          
+          static async handleAsync(operation, fallback = null) {
+            try {
+              return await operation();
+            } catch (error) {
+              console.error('非同期エラーが発生しました:', error);
+              this.showUserMessage(error.message);
+              return fallback;
+            }
+          }
+          
+          static showUserMessage(message) {
+            const notification = document.createElement('div');
+            notification.className = 'error-notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+              notification.remove();
+            }, 5000);
+          }
+        }
+    
+    validation_pattern:
+      description: "入力検証パターン"
+      code: |
+        class Validator {
+          static rules = {
+            required: (value) => {
+              return value && value.trim() !== '' 
+                ? null 
+                : '必須項目です';
+            },
+            
+            minLength: (min) => (value) => {
+              return value && value.length >= min 
+                ? null 
+                : `${min}文字以上入力してください`;
+            },
+            
+            maxLength: (max) => (value) => {
+              return value && value.length <= max 
+                ? null 
+                : `${max}文字以下で入力してください`;
+            },
+            
+            pattern: (regex, message) => (value) => {
+              return regex.test(value) 
+                ? null 
+                : message;
+            }
+          };
+          
+          static validate(value, rules) {
+            for (const rule of rules) {
+              const error = rule(value);
+              if (error) {
+                return error;
+              }
+            }
+            return null;
+          }
+          
+          static validateForm(formData, schema) {
+            const errors = {};
+            
+            for (const [field, rules] of Object.entries(schema)) {
+              const error = this.validate(formData[field], rules);
+              if (error) {
+                errors[field] = error;
+              }
+            }
+            
+            return Object.keys(errors).length > 0 ? errors : null;
+          }
+        }
+
+# 思考プロセステンプレート
+thinking_process_template:
+  phase_4_thinking: |
+    <thinking>
+    ## フェーズ4: 実装 実行中
+    
+    ### 現在のステップ: ${current_step}
+    
+    ### 1. 実装計画
+    実装する機能:
+    ${foreach feature in features_to_implement}
+    - [ ] ${feature.name}
+      - 複雑度: ${feature.complexity}
+      - 依存関係: ${feature.dependencies}
+    ${endforeach}
+    
+    ### 2. 技術的考慮事項
+    使用するパターン:
+    ${foreach pattern in selected_patterns}
+    - ${pattern.name}: ${pattern.reason}
+    ${endforeach}
+    
+    ### 3. エラーハンドリング戦略
+    予想されるエラー:
+    ${foreach error in anticipated_errors}
+    - ${error.type}: ${error.handling_strategy}
+    ${endforeach}
+    
+    ### 4. テスト計画
+    実装後のテスト:
+    ${foreach test in test_plan}
+    - ${test.name}: ${test.scope}
+    ${endforeach}
+    
+    ### 5. 実装チェックリスト
+    - [ ] コア機能が動作する
+    - [ ] エラーハンドリングが適切
+    - [ ] UIとの連携が正常
+    - [ ] パフォーマンスが許容範囲内
+    - [ ] コードが保守可能
+    </thinking>
+
+# 条件付き処理
+conditional_operations:
+  - name: "公式ドキュメント参照"
+    trigger:
+      - "専門ライブラリ使用時"
+      - "不確実な実装時"
+    process:
+      - web_search:
+          query: "${library_name} official documentation"
+          purpose: "正確な実装方法確認"
+      - think:
+          validate_compatibility: true
+          extract_best_practices: true
+
+# 完了基準の詳細定義
+detailed_completion_criteria:
+  step_1_criteria:
+    basic_functionality_working:
+      check: "コア機能が動作している"
+      validation: "基本的なユースケースが実行可能"
+      test_cases:
+        - "データの作成が可能"
+        - "データの読み取りが正常"
+        - "データの更新が反映される"
+        - "データの削除が機能する"
+    
+    core_features_implemented:
+      check: "必須機能が実装済み"
+      validation: "要求仕様との整合性確認"
+      checklist:
+        - "主要な機能が動作"
+        - "データ永続化が機能"
+        - "基本的なUIインタラクション"
+    
+    initial_testing_passed:
+      check: "基本テストが通過"
+      validation: "エラーなく動作する"
+      test_scope:
+        - "正常系の動作確認"
+        - "基本的な異常系の処理"
+        - "UIとの連携確認"
+  
+  step_2_criteria:
+    interactive_features_complete:
+      check: "インタラクティブ機能が完成"
+      validation: "ユーザー操作が直感的"
+      features:
+        - "ドラッグ&ドロップ"
+        - "リアルタイム更新"
+        - "アニメーション効果"
+    
+    user_feedback_implemented:
+      check: "フィードバック機構が実装済み"
+      validation: "操作結果が明確"
+      feedback_types:
+        - "成功メッセージ"
+        - "エラー表示"
+        - "ローディング表示"
+        - "確認ダイアログ"
+    
+    ux_enhancements_applied:
+      check: "UX改善が適用済み"
+      validation: "使いやすさの向上"
+      improvements:
+        - "レスポンスの高速化"
+        - "直感的な操作フロー"
+        - "視覚的フィードバック"
+  
+  step_3_criteria:
+    advanced_features_complete:
+      check: "高度な機能が実装完了"
+      validation: "付加価値機能が動作"
+      features:
+        - "検索・フィルタリング"
+        - "ソート機能"
+        - "エクスポート/インポート"
+        - "設定のカスタマイズ"
+    
+    final_polish_applied:
+      check: "最終的な仕上げ完了"
+      validation: "プロフェッショナルな品質"
+      polish_items:
+        - "UI/UXの微調整"
+        - "パフォーマンス最適化"
+        - "コードのリファクタリング"
+        - "ドキュメントの整備"
+    
+    comprehensive_testing_passed:
+      check: "総合テスト合格"
+      validation: "本番環境相当の品質"
+      test_coverage:
+        - "単体テスト"
+        - "統合テスト"
+        - "E2Eテスト"
+        - "パフォーマンステスト"
+
+# エラーハンドリング（フェーズ4固有）
+phase_4_specific_errors:
+  javascript_errors:
+    - type: "ReferenceError"
+      common_cause: "未定義の変数参照"
+      resolution: "変数の宣言と初期化を確認"
+      
+    - type: "TypeError"
+      common_cause: "null/undefinedのプロパティアクセス"
+      resolution: "nullチェックとオプショナルチェーン"
+      
+    - type: "SyntaxError"
+      common_cause: "構文エラー"
+      resolution: "括弧、セミコロン、引用符の確認"
+  
+  dom_errors:
+    - type: "要素が見つからない"
+      common_cause: "セレクタの誤りまたはタイミング"
+      resolution: "DOMContentLoadedイベントの使用"
+      
+    - type: "イベントが発火しない"
+      common_cause: "動的要素へのイベント登録"
+      resolution: "イベント委譲パターンの使用"
+  
+  data_errors:
+    - type: "データ整合性エラー"
+      common_cause: "非同期処理の競合"
+      resolution: "適切な同期処理とロック機構"
+      
+    - type: "ストレージ容量超過"
+      common_cause: "LocalStorageの5MB制限"
+      resolution: "データ圧縮または代替ストレージ"
+
+# 実装例
+implementation_example:
+  project: "タスク管理アプリ"
+  
+  step_1_implementation:
+    core_features:
+      code: |
+        // タスク管理の基本実装
+        class TaskManager {
+          constructor() {
+            this.dataManager = new DataManager('tasks');
+            this.tasks = this.dataManager.data;
+            this.init();
+          }
+          
+          init() {
+            this.bindEvents();
+            this.render();
+          }
+          
+          bindEvents() {
+            // フォーム送信
+            document.querySelector('.task-form').addEventListener('submit', (e) => {
+              e.preventDefault();
+              this.addTask();
+            });
+            
+            // タスクリストのイベント委譲
+            new EventDelegator(
+              document.querySelector('.task-list'),
+              '.delete-btn',
+              'click',
+              function(e) {
+                const taskId = this.dataset.taskId;
+                taskManager.deleteTask(taskId);
+              }
+            );
+          }
+          
+          addTask() {
+            const input = document.querySelector('.task-input');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            const task = {
+              id: Date.now().toString(),
+              text: text,
+              completed: false,
+              createdAt: new Date().toISOString()
+            };
+            
+            this.dataManager.add(task);
+            this.render();
+            input.value = '';
+          }
+          
+          deleteTask(id) {
+            this.dataManager.delete(id);
+            this.render();
+          }
+          
+          render() {
+            const list = document.querySelector('.task-list');
+            list.innerHTML = this.tasks.map(task => `
+              <li class="task-item ${task.completed ? 'completed' : ''}">
+                <input type="checkbox" ${task.completed ? 'checked' : ''}>
+                <span>${task.text}</span>
+                <button class="delete-btn" data-task-id="${task.id}">削除</button>
+              </li>
+            `).join('');
+          }
+        }
+        
+        // アプリケーション起動
+        document.addEventListener('DOMContentLoaded', () => {
+          window.taskManager = new TaskManager();
+        });
+
+# フェーズ4の出力フォーマット
+output_format:
+  implementation_summary:
+    current_step: "実行中のステップ"
+    completed_features:
+      - name: "機能名"
+        status: "完了/実装中"
+        test_result: "合格/失敗"
+    
+    code_metrics:
+      total_lines: "コード行数"
+      functions: "関数数"
+      complexity: "複雑度"
+    
+    test_coverage:
+      unit_tests: "カバレッジ%"
+      integration_tests: "実行数"
+      e2e_tests: "シナリオ数"
+    
+    performance:
+      load_time: "初期読み込み時間"
+      response_time: "平均レスポンス時間"
+      memory_usage: "メモリ使用量"
+
+# プロジェクト完了時の処理
+project_completion:
+  final_checklist:
+    - "すべての機能が実装されている"
+    - "エラーハンドリングが適切"
+    - "パフォーマンスが最適化されている"
+    - "コードが整理されている"
+    - "ドキュメントが最新"
+  
+  deliverables:
+    - "完成したアプリケーション"
+    - "ソースコード"
+    - "ドキュメント一式"
+    - "テストスイート"
+    - "デプロイ手順"
+
+
+```

@@ -1,0 +1,179 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# taskmanagement.mdc
+```yaml
+# ■■■■■■■■■■■■■■■■■■ タスク管理システムルール ■■■■■■■■■■■■■■■■■■■■■
+# このルールが読み込まれた場合、上記ヘッダーを最初に出力してください
+
+# -----------------------------------------------------------------------------
+# 1. メタデータ
+# -----------------------------------------------------------------------------
+meta:
+  name: タスク管理システムルール
+  description: 複数AIエージェントが効率的に協調できる追跡・永続化タスク管理システム
+  version: 2.0
+  parent: mainrules.mdc
+  language: ja
+  features: [ multi_agent, file_partitioning, conflict_prevention ]
+
+# -----------------------------------------------------------------------------
+# 2. 基本原則 & 主要構成
+# -----------------------------------------------------------------------------
+principles:
+  - 全タスク追跡可能 & ドキュメント化
+  - 明確なファイル所有権で競合を防止
+  - エージェント負荷を監視し自動再配分
+
+structure:
+  sections:
+    - agent_coordination
+    - task_lifecycle
+    - storage
+    - templates
+    - automation
+    - execution_control
+    - workload_balancing
+    - communication
+    - dependencies
+    - guidelines
+    - review
+    - kpi
+
+# -----------------------------------------------------------------------------
+# 3. エージェント協調
+# -----------------------------------------------------------------------------
+agent_coordination:
+  assignment:
+    strategy: file_path_based
+    conflict_rule: strict_first_owner
+  agent_pool:
+    name_format: Agent-${id}
+    capacity: dynamic
+  criteria:
+    workload: least_loaded_first (max 3 tasks)
+    file_type:
+      frontend: [ "*.tsx", "*.jsx" ]
+      backend:  [ "*.rs", "*.py" ]
+      docs:     [ "*.md" ]
+    complexity:
+      simple: any
+      medium: experienced
+      complex|critical: dedicated
+  dynamic_reassignment:
+    triggers: [ imbalance, no_response_30m, complexity_change ]
+    method: reassign_to_lightest
+
+# -----------------------------------------------------------------------------
+# 4. タスクライフサイクル
+# -----------------------------------------------------------------------------
+life_cycle:
+  states: [ pending, in_progress, blocked, completed, verified ]
+  transitions:
+    start:       pending -> in_progress
+    block:       in_progress -> blocked
+    unblock:     blocked -> in_progress
+    finish:      in_progress -> completed
+    verify:      completed -> verified
+  creation:
+    steps: [ deliverable_id, atomic_breakdown, set_priority, estimate_complexity ]
+  documentation_format: markdown
+
+# -----------------------------------------------------------------------------
+# 5. ストレージ
+# -----------------------------------------------------------------------------
+storage:
+  root: tasks/
+  naming: TASK-${id}_${category}.md
+  index: tasks/INDEX.md
+  categories: [ feature, bug, refactor, docs, test, perf, security, multi_agent ]
+
+# -----------------------------------------------------------------------------
+# 6. テンプレート要約
+# -----------------------------------------------------------------------------
+templates:
+  single:
+    duration: 8h
+    agent: single
+  collaborative:
+    duration: 3d
+    agent: multiple
+    coordination: required
+  partitioned:
+    duration: 5d
+    partitioning: file_path_based
+
+# -----------------------------------------------------------------------------
+# 7. 自動ドキュメント化 & 更新
+# -----------------------------------------------------------------------------
+automation:
+  triggers: [ state_change, impl_complete, test_ready, error, agent_change ]
+  actions:  [ update_task, update_index, progress_report, link_artifacts ]
+
+# -----------------------------------------------------------------------------
+# 8. 実行制御 & 競合防止
+# -----------------------------------------------------------------------------
+execution_control:
+  locking:
+    type: file_based
+    release: on_completion
+  pre_checks: [ ownership_ok, deps_ready, integration_point_ready ]
+  daily_sync:
+    every: 8h
+    agenda: [ progress, blockers, integration ]
+
+# -----------------------------------------------------------------------------
+# 9. 負荷監視 & 再配分
+# -----------------------------------------------------------------------------
+workload:
+  monitor_metrics: [ concurrent_tasks, response_time, completion_rate ]
+  thresholds:
+    overload:   tasks > 3
+    underload:  tasks < 1 (2h)
+  rebalancing: [ redistribute, adjust_priority, scale_agents ]
+
+# -----------------------------------------------------------------------------
+# 10. コミュニケーション
+# -----------------------------------------------------------------------------
+communication:
+  comment: "@Agent-${id}: {msg}"
+  status:  "**Status** {time} Agent-${id}: {desc}"
+  blocker: "🚨 **BLOCKER** @Agent-${id}: {issue}"
+
+# -----------------------------------------------------------------------------
+# 11. 依存関係
+# -----------------------------------------------------------------------------
+dependencies:
+  types: [ blocks, requires, relates, coordination, file_share, api_contract ]
+  resolution:
+    file_conflict: separate_branches_merge
+    api_mismatch: negotiate_contract
+
+# -----------------------------------------------------------------------------
+# 12. ガイドライン & ベストプラクティス
+# -----------------------------------------------------------------------------
+guidelines:
+  creation_flow: [ analyse, assign_agents, map_deps, split_tasks, define_integration, doc_generate ]
+  best_practices:
+    partitioning: [ one_file_one_agent, shared_files_split, dir_boundary ]
+    coordination: [ predefine_api, parallel_integration_tests, 8h_sync ]
+    conflict:     [ clarify_ownership, agree_scope, align_integration ]
+
+# -----------------------------------------------------------------------------
+# 13. レビュー
+# -----------------------------------------------------------------------------
+review:
+  single_check: [ code_done, tests_green, docs_updated, scope_respected ]
+  multi_check:  [ sub_tasks_done, integration_tests_green, api_ok, docs_sync, load_balanced ]
+
+# -----------------------------------------------------------------------------
+# 14. KPI
+# -----------------------------------------------------------------------------
+kpi:
+  efficiency: { parallel_exec >= 70, overhead < 20, integration_success >= 95 }
+  quality:    { cross_bug < 5, integration_cov >= 90, doc_consistency >= 95 }
+  collaboration: { conflict_resolution < 4h, handoff_success >= 98 }
+
+```

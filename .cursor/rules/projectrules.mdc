@@ -1,0 +1,699 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# ■■■■■■■■■■■■■■■■■■ プロジェクトルール ■■■■■■■■■■■■■■■■■■■■■
+# このルールが読み込まれた場合、上記のヘッダーを最初に出力してください
+
+# SaaS Account Management System - プロジェクトルール
+
+このファイルは、SaaSアカウント一元管理システムの固有ルールを定義します。
+mainrules.mdcのフレームワークに準拠し、エンタープライズ企業向けアカウント管理の開発要件を定義します。
+
+## プロジェクト概要
+
+**目標**: エンタープライズ企業における入社・退社・異動に伴うSaaSアカウントの作成・削除・権限変更を一元管理・自動化する
+**コアバリュー**: 業務効率化・情報セキュリティ・コンプライアンス・運用自動化
+**開発方針**: セキュリティファースト・スケーラブル設計・API連携重視・監査証跡保持
+
+## プロジェクト固有の技術スタック
+
+### 1. フロントエンド構成
+- **Next.js 14**
+  - App Router使用
+  - Server Components活用
+  - TypeScript厳密設定
+- **TailwindCSS**
+  - ユーティリティファースト
+  - レスポンシブデザイン
+  - カスタムデザインシステム
+- **shadcn/ui**
+  - 管理画面UI統一
+  - アクセシビリティ対応
+
+### 2. バックエンド・インフラ構成
+- **Node.js + Express**
+  - REST API設計
+  - JWT認証
+  - API Rate Limiting
+- **PostgreSQL**
+  - 関係データベース
+  - ログ・監査証跡
+  - 権限管理
+- **AWS/GCP**
+  - クラウドインフラ
+  - 可用性99.9%以上
+  - スケーラブル設計
+
+### 3. 認証・認可システム
+- **SAML2.0/OpenID Connect**
+  - Okta連携
+  - Azure AD連携
+  - シングルサインオン
+- **OAuth2.0**
+  - 外部SaaS連携
+  - トークン管理
+  - セキュアAPI通信
+
+### 4. SaaS連携アーキテクチャ
+- **API連携モジュール**
+  - プラガブル設計
+  - 拡張可能な構成
+  - エラーハンドリング
+- **SCIM対応**
+  - 自動プロビジョニング
+  - 標準化された連携
+
+## プロジェクト固有のディレクトリ構造
+
+```
+saas_account_management_system/
+├── src/
+│   ├── app/                      # Next.js App Router
+│   │   ├── (auth)/              # 認証関連ページグループ
+│   │   │   ├── layout.tsx       # 認証レイアウト
+│   │   │   ├── login/           # ログインページ
+│   │   │   ├── callback/        # OAuth コールバック
+│   │   │   └── logout/          # ログアウト
+│   │   ├── (dashboard)/         # メイン管理画面
+│   │   │   ├── layout.tsx       # ダッシュボードレイアウト
+│   │   │   ├── dashboard/       # ダッシュボード
+│   │   │   ├── users/           # ユーザー管理
+│   │   │   ├── saas/            # SaaS連携管理
+│   │   │   ├── workflows/       # ワークフロー管理
+│   │   │   ├── permissions/     # 権限テンプレート
+│   │   │   ├── logs/            # ログ・監査
+│   │   │   └── settings/        # システム設定
+│   │   ├── api/                 # API Routes
+│   │   │   ├── auth/            # 認証API
+│   │   │   ├── users/           # ユーザー管理API
+│   │   │   ├── saas/            # SaaS連携API
+│   │   │   ├── provisioning/    # プロビジョニングAPI
+│   │   │   ├── workflows/       # ワークフローAPI
+│   │   │   └── logs/            # ログ・監査API
+│   │   ├── globals.css          # グローバルスタイル
+│   │   └── layout.tsx           # ルートレイアウト
+│   ├── components/              # 再利用可能コンポーネント
+│   │   ├── ui/                  # 基本UIコンポーネント
+│   │   ├── layout/              # レイアウトコンポーネント
+│   │   ├── features/            # 機能別コンポーネント
+│   │   │   ├── auth/            # 認証関連
+│   │   │   ├── users/           # ユーザー管理
+│   │   │   ├── saas/            # SaaS連携
+│   │   │   ├── workflows/       # ワークフロー
+│   │   │   ├── permissions/     # 権限管理
+│   │   │   ├── logs/            # ログ・監査
+│   │   │   └── dashboard/       # ダッシュボード
+│   │   └── common/              # 共通コンポーネント
+│   ├── hooks/                   # Custom Hooks
+│   │   ├── useAuth.ts           # 認証フック
+│   │   ├── useUsers.ts          # ユーザー管理フック
+│   │   ├── useSaaS.ts           # SaaS連携フック
+│   │   ├── useWorkflows.ts      # ワークフローフック
+│   │   └── usePermissions.ts    # 権限管理フック
+│   ├── stores/                  # 状態管理
+│   │   ├── authStore.ts         # 認証状態
+│   │   ├── userStore.ts         # ユーザー状態
+│   │   ├── saasStore.ts         # SaaS連携状態
+│   │   └── workflowStore.ts     # ワークフロー状態
+│   ├── lib/                     # ユーティリティ・設定
+│   │   ├── auth.ts              # 認証設定
+│   │   ├── database.ts          # データベース設定
+│   │   ├── saas-connectors/     # SaaS連携モジュール
+│   │   │   ├── google.ts        # Google Workspace
+│   │   │   ├── microsoft.ts     # Microsoft 365
+│   │   │   ├── slack.ts         # Slack
+│   │   │   ├── github.ts        # GitHub
+│   │   │   └── base.ts          # 基底クラス
+│   │   ├── utils.ts             # 汎用ユーティリティ
+│   │   ├── validations.ts       # バリデーション
+│   │   └── constants.ts         # 定数定義
+│   ├── types/                   # 型定義
+│   │   ├── index.ts             # 基本型定義
+│   │   ├── auth.ts              # 認証関連型
+│   │   ├── user.ts              # ユーザー関連型
+│   │   ├── saas.ts              # SaaS関連型
+│   │   ├── workflow.ts          # ワークフロー関連型
+│   │   └── api.ts               # API関連型
+│   └── styles/                  # スタイル関連
+│       ├── globals.css          # グローバルスタイル
+│       └── components.css       # コンポーネント固有スタイル
+├── docs/                        # プロジェクトドキュメント
+│   ├── REQ-001_要求仕様書.md     # 要求仕様
+│   ├── ARC-001_システム構成図.md  # アーキテクチャ
+│   ├── DSG-001_API仕様書.md      # API仕様
+│   ├── DSG-002_データベース設計.md # DB設計
+│   ├── DSG-003_SaaS連携仕様書.md  # SaaS連携仕様
+│   └── SEC-001_セキュリティ仕様書.md # セキュリティ仕様
+├── database/                    # データベース関連
+│   ├── migrations/              # DBマイグレーション
+│   ├── seeds/                   # 初期データ
+│   └── schemas/                 # スキーマ定義
+├── tests/                       # テストスイート
+│   ├── __tests__/               # 単体テスト
+│   ├── integration/             # 統合テスト
+│   └── e2e/                     # E2Eテスト
+└── public/                      # 静的ファイル
+    ├── images/                  # 画像ファイル
+    └── icons/                   # アイコンファイル
+```
+
+## 主要機能仕様
+
+### 1. ユーザー情報管理
+```yaml
+user_management:
+  master_data:
+    - employee_id: "社員番号"
+    - name: "氏名"
+    - department: "部署"
+    - position: "役職"
+    - hire_date: "入社日"
+    - termination_date: "退社日"
+    - email: "メールアドレス"
+    - manager: "上司"
+  
+  import_export:
+    - csv_import: "CSVインポート"
+    - csv_export: "CSVエクスポート"
+    - validation: "データバリデーション"
+    - bulk_operations: "一括操作"
+```
+
+### 2. SaaS連携システム
+```yaml
+saas_integration:
+  supported_services:
+    - google_workspace: "Google Workspace"
+    - microsoft_365: "Microsoft 365"
+    - slack: "Slack"
+    - zoom: "Zoom"
+    - github: "GitHub"
+    - gitlab: "GitLab"
+    - salesforce: "Salesforce"
+    - aws_iam: "AWS IAM"
+    - azure_ad: "Azure AD"
+    - okta: "Okta"
+  
+  connection_methods:
+    - oauth2: "OAuth2.0認証"
+    - api_tokens: "APIトークン"
+    - scim: "SCIM準拠"
+    - webhook: "Webhook対応"
+  
+  operations:
+    - account_creation: "アカウント作成"
+    - account_deletion: "アカウント削除"
+    - permission_update: "権限変更"
+    - status_sync: "ステータス同期"
+```
+
+### 3. アカウント自動プロビジョニング
+```yaml
+provisioning:
+  onboarding:
+    - template_based: "テンプレートベース"
+    - role_assignment: "ロール自動割当"
+    - notification: "通知連携"
+    - verification: "作成確認"
+  
+  offboarding:
+    - scheduled_deletion: "退社日自動削除"
+    - data_archival: "データアーカイブ"
+    - access_revocation: "アクセス権剥奪"
+    - audit_trail: "監査証跡"
+  
+  transfer:
+    - department_change: "部署異動"
+    - role_change: "役職変更"
+    - permission_migration: "権限移行"
+```
+
+### 4. 権限テンプレート管理
+```yaml
+permission_templates:
+  role_definitions:
+    - department_based: "部署別ロール"
+    - position_based: "役職別ロール"
+    - custom_roles: "カスタムロール"
+  
+  permission_matrix:
+    - saas_permissions: "SaaS別権限"
+    - inheritance: "権限継承"
+    - exceptions: "例外設定"
+    - approval_required: "承認必要権限"
+```
+
+### 5. ワークフロー・承認機能
+```yaml
+workflow_system:
+  approval_flow:
+    - multi_stage: "多段階承認"
+    - parallel_approval: "並列承認"
+    - conditional_approval: "条件付承認"
+    - escalation: "エスカレーション"
+  
+  notifications:
+    - slack_integration: "Slack通知"
+    - email_notifications: "メール通知"
+    - in_app_notifications: "アプリ内通知"
+    - reminder_system: "リマインダー"
+```
+
+### 6. モニタリング・ログ機能
+```yaml
+monitoring_logging:
+  audit_trail:
+    - operation_logs: "操作ログ"
+    - access_logs: "アクセスログ"
+    - error_logs: "エラーログ"
+    - compliance_logs: "コンプライアンスログ"
+  
+  dashboard:
+    - real_time_status: "リアルタイム状況"
+    - usage_statistics: "利用統計"
+    - error_monitoring: "エラー監視"
+    - performance_metrics: "パフォーマンス指標"
+```
+
+## データベース設計原則
+
+### 1. セキュリティ設計
+```yaml
+security_principles:
+  access_control:
+    - role_based_access: "ロールベースアクセス制御"
+    - data_encryption: "データ暗号化"
+    - audit_logging: "監査ログ"
+    - ip_restrictions: "IP制限"
+  
+  compliance:
+    - gdpr_compliance: "GDPR準拠"
+    - sox_compliance: "SOX法準拠"
+    - retention_policies: "データ保持ポリシー"
+    - anonymization: "データ匿名化"
+```
+
+### 2. パフォーマンス設計
+```yaml
+performance_optimization:
+  database_optimization:
+    - indexing_strategy: "インデックス戦略"
+    - query_optimization: "クエリ最適化"
+    - connection_pooling: "コネクションプーリング"
+    - caching_layer: "キャッシュレイヤー"
+  
+  scalability:
+    - horizontal_scaling: "水平スケーリング"
+    - read_replicas: "読み取り専用レプリカ"
+    - partitioning: "パーティショニング"
+    - archival_strategy: "アーカイブ戦略"
+```
+
+## API設計原則
+
+### 1. RESTful設計
+```yaml
+api_design:
+  endpoint_structure:
+    pattern: "/api/v1/{resource}/{id?}"
+    versioning: "セマンティックバージョニング"
+    resource_naming: "複数形名詞"
+  
+  http_methods:
+    - GET: "データ取得"
+    - POST: "データ作成"
+    - PUT: "データ更新（完全）"
+    - PATCH: "データ更新（部分）"
+    - DELETE: "データ削除"
+  
+  response_format:
+    success: "{ data: T, meta?: {}, links?: {} }"
+    error: "{ error: { code, message, details?, timestamp } }"
+```
+
+### 2. セキュリティ
+```yaml
+api_security:
+  authentication:
+    - jwt_tokens: "JWT Bearer Token"
+    - oauth2_flows: "OAuth2.0フロー"
+    - token_refresh: "トークンリフレッシュ"
+    - multi_factor: "多要素認証"
+  
+  authorization:
+    - rbac: "ロールベースアクセス制御"
+    - scope_validation: "スコープ検証"
+    - resource_authorization: "リソース認可"
+    - audit_logging: "監査ログ"
+  
+  protection:
+    - rate_limiting: "レート制限"
+    - input_validation: "入力検証"
+    - output_sanitization: "出力サニタイズ"
+    - cors_policy: "CORS設定"
+```
+
+## UI/UX設計原則
+
+### 1. 管理画面デザイン
+```yaml
+admin_ui_design:
+  design_principles:
+    - clarity: "明確性"
+    - efficiency: "効率性"
+    - consistency: "一貫性"
+    - accessibility: "アクセシビリティ"
+  
+  layout_patterns:
+    - sidebar_navigation: "サイドバーナビゲーション"
+    - breadcrumb_navigation: "パンくずナビゲーション"
+    - data_tables: "データテーブル"
+    - form_layouts: "フォームレイアウト"
+    - modal_dialogs: "モーダルダイアログ"
+```
+
+### 2. レスポンシブデザイン
+```yaml
+responsive_design:
+  breakpoints:
+    mobile: "< 768px"
+    tablet: "768px - 1024px"
+    desktop: "> 1024px"
+  
+  approach: "Desktop First"
+  
+  layout_adaptation:
+    - collapsible_sidebar: "折りたたみサイドバー"
+    - responsive_tables: "レスポンシブテーブル"
+    - touch_friendly: "タッチフレンドリー"
+```
+
+## 開発規約
+
+### 1. TypeScript規約
+```typescript
+// 厳密な型定義を使用
+interface User {
+  readonly id: string;
+  employeeId: string;
+  name: string;
+  email: string;
+  department: string;
+  position: string;
+  hireDate: Date;
+  terminationDate?: Date;
+  manager?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// SaaS連携用型定義
+interface SaaSAccount {
+  id: string;
+  userId: string;
+  saasProvider: SaaSProvider;
+  accountId: string;
+  permissions: Permission[];
+  status: AccountStatus;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// ワークフロー型定義
+interface WorkflowRequest {
+  id: string;
+  type: WorkflowType;
+  requesterId: string;
+  targetUserId: string;
+  approvers: Approver[];
+  status: WorkflowStatus;
+  data: Record<string, unknown>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### 2. SaaS連携規約
+```typescript
+// SaaS連携基底クラス
+abstract class SaaSConnector {
+  abstract authenticate(): Promise<void>;
+  abstract createAccount(user: User): Promise<SaaSAccount>;
+  abstract updateAccount(account: SaaSAccount): Promise<void>;
+  abstract deleteAccount(accountId: string): Promise<void>;
+  abstract getAccountStatus(accountId: string): Promise<AccountStatus>;
+  
+  protected handleError(error: unknown): never {
+    // 統一エラーハンドリング
+    throw new SaaSError('Connection failed', error);
+  }
+}
+
+// Google Workspace連携実装例
+class GoogleWorkspaceConnector extends SaaSConnector {
+  private client: GoogleAuth;
+  
+  async authenticate(): Promise<void> {
+    this.client = new GoogleAuth({
+      credentials: process.env.GOOGLE_SERVICE_ACCOUNT_KEY,
+      scopes: ['https://www.googleapis.com/auth/admin.directory.user']
+    });
+  }
+  
+  async createAccount(user: User): Promise<SaaSAccount> {
+    try {
+      const adminClient = google.admin({ version: 'directory_v1', auth: this.client });
+      const result = await adminClient.users.insert({
+        requestBody: {
+          primaryEmail: user.email,
+          name: {
+            givenName: user.name.split(' ')[0],
+            familyName: user.name.split(' ')[1]
+          },
+          password: generateSecurePassword(),
+          orgUnitPath: `/departments/${user.department}`
+        }
+      });
+      
+      return {
+        id: generateId(),
+        userId: user.id,
+        saasProvider: 'google_workspace',
+        accountId: result.data.id!,
+        permissions: [],
+        status: 'active',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+}
+```
+
+## テスト戦略
+
+### 1. テストピラミッド
+```yaml
+testing_strategy:
+  unit_tests:
+    coverage: "> 80%"
+    focus: "ビジネスロジック、ユーティリティ、SaaS連携"
+    tools: "Jest + Testing Library"
+  
+  integration_tests:
+    coverage: "API連携、データベース操作、ワークフロー"
+    focus: "SaaS連携、認証フロー、承認プロセス"
+    tools: "Jest + Supertest"
+  
+  e2e_tests:
+    coverage: "クリティカルパス（入社・退社・異動）"
+    focus: "エンドツーエンドのユーザージャーニー"
+    tools: "Playwright"
+```
+
+### 2. セキュリティテスト
+```yaml
+security_testing:
+  authentication_tests:
+    - login_flow: "ログインフロー"
+    - token_validation: "トークン検証"
+    - session_management: "セッション管理"
+  
+  authorization_tests:
+    - rbac_enforcement: "RBAC実装"
+    - permission_boundaries: "権限境界"
+    - privilege_escalation: "権限昇格防止"
+  
+  data_protection_tests:
+    - encryption_validation: "暗号化検証"
+    - input_sanitization: "入力サニタイズ"
+    - output_encoding: "出力エンコーディング"
+```
+
+## パフォーマンス要件
+
+### 1. レスポンス時間
+```yaml
+performance_requirements:
+  response_times:
+    api_calls: "< 200ms"
+    database_queries: "< 100ms"
+    saas_operations: "< 5秒"
+    bulk_operations: "< 30秒"
+  
+  throughput:
+    concurrent_users: "100+"
+    api_requests_per_minute: "1000+"
+    provisioning_operations_per_hour: "500+"
+```
+
+### 2. 可用性・信頼性
+```yaml
+availability_reliability:
+  uptime: "99.9%"
+  error_rate: "< 0.1%"
+  data_consistency: "強整合性"
+  disaster_recovery: "RTO: 4時間、RPO: 1時間"
+```
+
+## セキュリティ要件
+
+### 1. 認証・認可
+```yaml
+authentication_authorization:
+  multi_factor_auth: "多要素認証必須"
+  saml_sso: "SAML2.0 SSO"
+  oauth2_compliance: "OAuth2.0準拠"
+  token_management: "JWTトークン管理"
+  
+  rbac_implementation:
+    - admin: "システム管理者"
+    - hr_manager: "人事マネージャー"
+    - dept_manager: "部門マネージャー"
+    - it_admin: "IT管理者"
+    - user: "一般ユーザー"
+```
+
+### 2. データ保護
+```yaml
+data_protection:
+  encryption:
+    - data_at_rest: "保存データ暗号化（AES-256）"
+    - data_in_transit: "通信データ暗号化（TLS1.3）"
+    - api_keys: "APIキー暗号化"
+    - pii_data: "個人情報暗号化"
+  
+  access_control:
+    - ip_whitelisting: "IP制限"
+    - geo_blocking: "地理的制限"
+    - time_based_access: "時間制限アクセス"
+    - device_restrictions: "デバイス制限"
+```
+
+## 運用・監視
+
+### 1. ログ管理
+```yaml
+logging:
+  structured_logging: "構造化ログ（JSON）"
+  log_levels: "[ERROR, WARN, INFO, DEBUG]"
+  log_retention: "7年間保持"
+  log_rotation: "日次ローテーション"
+  
+  audit_logging:
+    - user_actions: "ユーザー操作"
+    - admin_actions: "管理者操作"
+    - saas_operations: "SaaS操作"
+    - system_events: "システムイベント"
+    - security_events: "セキュリティイベント"
+```
+
+### 2. 監視・アラート
+```yaml
+monitoring_alerting:
+  system_metrics:
+    - cpu_usage: "CPU使用率"
+    - memory_usage: "メモリ使用率"
+    - disk_usage: "ディスク使用率"
+    - network_traffic: "ネットワークトラフィック"
+  
+  application_metrics:
+    - response_times: "レスポンス時間"
+    - error_rates: "エラー率"
+    - api_usage: "API使用量"
+    - saas_connection_status: "SaaS接続状況"
+  
+  alerts:
+    - critical_errors: "致命的エラー（即座）"
+    - performance_degradation: "パフォーマンス劣化（5分）"
+    - security_incidents: "セキュリティインシデント（即座）"
+    - saas_failures: "SaaS連携失敗（1分）"
+```
+
+## 品質ゲート
+
+```yaml
+quality_gates:
+  development:
+    - type_check: "TypeScript型チェック合格"
+    - lint_check: "ESLint規約適合"
+    - test_coverage: "テストカバレッジ80%以上"
+    - security_scan: "セキュリティスキャン合格"
+  
+  integration:
+    - integration_tests: "統合テスト合格"
+    - api_tests: "APIテスト合格"
+    - saas_connection_tests: "SaaS連携テスト合格"
+    - performance_tests: "パフォーマンステスト合格"
+  
+  production:
+    - security_audit: "セキュリティ監査合格"
+    - penetration_test: "侵入テスト合格"
+    - load_testing: "負荷テスト合格"
+    - disaster_recovery_test: "災害復旧テスト合格"
+```
+
+## 将来の拡張計画
+
+```yaml
+future_enhancements:
+  cost_optimization:
+    description: "SaaS課金最適化機能"
+    priority: "高"
+    timeline: "Phase 2"
+  
+  asset_management:
+    description: "社内資産（PC/ライセンス）連携"
+    priority: "中"
+    timeline: "Phase 3"
+  
+  ai_automation:
+    description: "AI による自動化・最適化"
+    priority: "中"
+    timeline: "Phase 4"
+  
+  mobile_support:
+    description: "モバイルアプリ対応"
+    priority: "低"
+    timeline: "Phase 4"
+```
+
+## コンプライアンス要件
+
+```yaml
+compliance_requirements:
+  regulations:
+    - gdpr: "EU一般データ保護規則"
+    - sox: "サーベンス・オクスリー法"
+    - iso27001: "ISO27001準拠"
+    - pci_dss: "PCI DSS準拠"
+  
+  audit_requirements:
+    - quarterly_reviews: "四半期レビュー"
+    - annual_audit: "年次監査"
+    - security_assessments: "セキュリティ評価"
+    - compliance_reporting: "コンプライアンス報告"

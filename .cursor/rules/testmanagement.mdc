@@ -1,0 +1,286 @@
+---
+description: 
+globs: *test
+alwaysApply: false
+---
+# testmanagement.mdc
+```yaml
+# ■■■■■■■■■■■■■■■■■■ テスト整備・実行ルール ■■■■■■■■■■■■■■■
+# このルールが読み込まれた場合、上記のヘッダーを最初に出力してください
+
+# -----------------------------------------------------------------------------
+# 1. メタデータ
+# -----------------------------------------------------------------------------
+meta:
+  name: テスト整備・実行ルール
+  description: 包括的なテスト戦略と自動化を実現する汎用テスト管理システム
+  version: 1.1 # バージョンを更新
+  parent: mainrules.mdc
+  scope: universal
+  language: ja
+  shell:
+    powershell:
+      avoid_operators: ["&&"]
+
+# -----------------------------------------------------------------------------
+# 2. 自律コーディングフロー
+# -----------------------------------------------------------------------------
+autonomous_coding:
+  tech_stack_verification:
+    language_selection:      { when: 未指定,       action: 選択候補提示 }
+    framework_selection:     { when: 未指定,       action: 選択候補提示 }
+    external_services:       { when: 必要時,       confirm: [ データベース, 外部サービス ] }
+    development_environment: { action: 開発環境とツール確認 }
+
+  requirements_clarification:
+    functional:      { when: 不明確, confirm: 具体的質問 }
+    non_functional:  { confirm: [ パフォーマンス, セキュリティ ] }
+    usage_scenarios: { action: 利用シナリオ確認 }
+
+  implementation_plan_approval:
+    plan_components:
+      - システム構成概要
+      - 主要コンポーネント責務
+      - データフロー
+      - 技術課題と解決策
+      - タスク分割・順序
+    task_breakdown:
+      - 最小単位へ分割
+      - 依存関係と優先度設定
+      - 動作確認ポイント設定
+      - 課題と対応策提示
+    approval: ユーザー承認後に着手、変更時も承認必須
+
+# -----------------------------------------------------------------------------
+# 3. 変更管理
+# -----------------------------------------------------------------------------
+change_management:
+  scope_control:
+    - 指定箇所のみ変更
+    - 無許可で関連コード変更禁止
+    - 改善提案は提案のみ
+    - 変更箇所を特定し確認
+
+  pre_change_requirements:
+    - 変更理由と影響説明
+    - 明示承認取得
+    - 選択肢があれば利点欠点提示
+
+  prohibited_changes:
+    - 要求外ファイル／DB作成
+    - 無関係なリネーム
+    - コメント削除・改変
+    - 自発的改善
+    - 自動フォーマットのみ変更
+
+# -----------------------------------------------------------------------------
+# 4. コーディング指針
+# -----------------------------------------------------------------------------
+coding_guidelines:
+  minimal_solution:
+    - 必要最小限・直接解決
+    - 関係ない機能を含まない
+    - 過度な抽象化禁止
+    - 既存実装優先
+
+  clean_code:
+    - 単一責任原則
+    - 変更は最小限・拡張性確保
+    - シンプルなインターフェース
+    - 疎結合維持
+
+# -----------------------------------------------------------------------------
+# 5. テスト管理
+# -----------------------------------------------------------------------------
+testing:
+  storage:
+    root: tests/
+    directory_structure: |
+      tests/
+      ├── unit/{components,utils,services}
+      ├── integration/{api,database,external}
+      ├── e2e/{scenarios,pages,fixtures}
+      ├── {performance,security,accessibility}
+      ├── _{fixtures,helpers,config}
+      └── INDEX.md
+
+    naming:
+      language:
+        python:      { file: "${test_type}/${category}/test_${feature}.py", suite: "${test_type}/${category}/test_${suite}.py" }
+        js_ts:       { file: "${test_type}/${category}/${feature}.test.${ext}", suite: "${test_type}/${category}/${suite}.test.${ext}" }
+        go:          { file: "${test_type}/${category}/${feature}_test.go", suite: "${test_type}/${category}/${suite}_test.go" }
+        java:        { file: "${test_type}/${category}/${Feature}Test.java", suite: "${test_type}/${category}/${Suite}Test.java" }
+        csharp:      { file: "${test_type}/${category}/${Feature}Tests.cs", suite: "${test_type}/${category}/${Suite}Tests.cs" }
+        rust:        { file: "${test_type}/${category}/${feature}_test.rs", suite: "${test_type}/${category}/mod.rs" }
+        php:         { file: "${test_type}/${category}/${Feature}Test.php", suite: "${test_type}/${category}/${Suite}Test.php" }
+      auto_detection: true
+      fallback: "${test_type}/${category}/${feature}.test.${ext}"
+    index: tests/INDEX.md
+    auto_update: true
+
+  pyramid:
+    unit:  { pct: 70, purpose: 個別検証,  speed: 高速 }
+    integ: { pct: 20, purpose: 連携検証,  speed: 中速 }
+    e2e:   { pct: 10, purpose: 全体検証,  speed: 低速 }
+
+  phases:
+    planning:       { prereq: requirements_defined, complete: test_plan }
+    implementation: { prereq: test_plan,            complete: tests_ready }
+    execution:      { trigger: [ code_change, schedule, manual ], type: continuous }
+
+  automation:
+    ci_cd:
+      triggers:
+        commit:       [ unit, fast_integration ]
+        pull_request: [ all ]
+        nightly:      [ e2e, performance ]
+        release:      [ smoke ]
+      gates:
+        - pass_rate  >= 95
+        - coverage   >= 80
+        - perf_reg   <= 10
+        - security   == clear
+      failure_handling:
+        - notify_immediately
+        - auto_retry_flaky
+        - auto_bisect
+        - auto_rollback
+
+  data_management:
+    categories:
+      static:     { examples: [ 国コード, 通貨コード ], manage: vcs }
+      dynamic:    { examples: [ ユーザー, 取引 ],       manage: auto_gen }
+      sensitive:  { examples: [ 個人情報, 決済情報 ],   manage: mask_encrypt }
+    generation: [ factory_pattern, builder_pattern ]
+    cleanup:   { auto: [ on_finish, gc ], manual: [ keep_long_term, audit_logs ] }
+
+  environment:
+    types:
+      dev:       { purpose: 日常テスト,    chars: [ 高速, デバッグ容易 ] }
+      staging:   { purpose: 本番近似,      chars: [ 同等構成, 性能測定 ] }
+      production:{ purpose: 監視,          chars: [ 実環境, 最小テスト ] }
+    containerization:
+      docker_compose: |
+        version: '3.8'
+        services:
+          # ... 省略 (テンプレート参照)
+      kubernetes_testing:
+        components: [ test_namespace, resource_limits, network_policies, monitoring ]
+
+  reporting:
+    metrics: [ execution, coverage, quality ]
+    formats: [ dashboard, detailed_reports, stakeholder_summary ]
+    trend_analysis: [ historical, predictive ]
+
+  strategy_selection:
+    project_types:
+      web:    { unit: Jest/Vitest, integ: Supertest, e2e: Playwright }
+      mobile: { unit: Native,       integ: Component, e2e: Appium }
+      api:    { unit: Framework,    integ: API_tools, e2e: Contract }
+      desktop:{ unit: Platform,     integ: Component, e2e: UI_Auto }
+    stack_guides:
+      js_ts: { framework: Jest/Vitest, mocks: Jest/Sinon, e2e: Playwright/Cypress }
+      python:{ framework: pytest,      mocks: unittest.mock, e2e: Selenium/Playwright }
+      java:  { framework: JUnit5,      mocks: Mockito,      e2e: Selenium }
+      csharp:{ framework: xUnit,       mocks: Moq,          e2e: Selenium }
+
+  error_handling:
+    failure_categories: [ product_bug, test_bug, env_issue, flaky ]
+    automatic_analysis: [ pattern_recognition, root_cause_suggest, similar_detection ]
+    recovery: [ auto_retry, env_reset, fallback_exec ]
+    feedback_loop: [ effectiveness_review, false_positive_cut, coverage_gap ]
+
+  debugging_and_diagnostics:
+    custom_error_strategy:
+      purpose: |
+        テスト失敗時に、なぜ失敗したのかを迅速かつ正確に特定するため、
+        コンテキスト情報（HTTPステータス、エラーコード、関連データ等）を豊富に含んだカスタムエラーを定義し、活用する。
+        これにより、テストのレポートがデバッグ情報として直接機能し、開発効率を向上させる。
+
+      guidelines:
+        - 期待されるエラーパス（例：不正な入力、リソースの不存在）では、汎用的なError/Exceptionではなく、専用のカスタムエラーをthrow/raiseする。
+        - カスタムエラーには、デバッグに役立つ情報をプロパティとして含める（例：`status`, `errorCode`, `details`）。
+        - テストコードでは、特定のカスタムエラーが正しいコンテキストで発生することを検証する。
+
+      implementation_by_language:
+        js_ts:
+          framework: Vitest
+          description: |
+            標準の `Error` クラスを継承してカスタムエラークラスを定義する。
+            テスト失敗時、Vitestはエラーオブジェクトの全プロパティを詳細に出力するため、デバッグが容易になる。
+          example: |
+            class ApiError extends Error {
+              constructor(message, status, details) {
+                super(message);
+                this.name = 'ApiError';
+                this.status = status;
+                this.details = details;
+              }
+            }
+            // ...
+            if (!response.ok) {
+              throw new ApiError('API request failed', response.status, { url: response.url });
+            }
+
+        python:
+          framework: pytest
+          description: |
+            標準の `Exception` クラスを継承してカスタム例外クラスを定義する。
+            テスト失敗時、pytestは例外オブジェクトとその属性を詳細にトレースバックと共に出力する。
+          example: |
+            class ApiException(Exception):
+                def __init__(self, message, status_code, details=None):
+                    super().__init__(message)
+                    self.status_code = status_code
+                    self.details = details or {}
+            # ...
+            if response.status_code >= 400:
+                raise ApiException(
+                    'API request failed',
+                    response.status_code,
+                    details={'url': response.url}
+                )
+
+  thinking_templates:
+    planning:   !!str |
+      <thinking> ... (省略: テンプレート参照) </thinking>
+    execution:  !!str |
+      <thinking> ... (省略: テンプレート参照) </thinking>
+
+  completion_criteria:
+    planning_complete:       [ test_strategy, test_cases, automation_plan, environment_plan ]
+    implementation_complete: [ unit_tests, integration_tests, e2e_tests, automation_setup ]
+    execution_complete:      [ execution_results, quality_metrics, issue_analysis, improvement_plan ]
+
+  handover:
+    outputs: [ test_suite, reports, metrics, pipeline ]
+    validate: [ tests_run, gates_passed, automation_green, docs_ready ]
+
+  output_format:
+    summary_fields: [ total_tests, breakdown, quality_metrics, automation_status ]
+
+  index_management:
+    auto_generate: true
+    backup: versioned_history
+    update: on_test_execution
+
+  directory_creation:
+    auto_create: true
+    order:
+      - tests/
+      - tests/unit/{components,utils,services}
+      - tests/integration/{api,database,external}
+      - tests/e2e/{scenarios,pages,fixtures}
+      - tests/{performance,security,accessibility}
+      - tests/_{fixtures,helpers,config}
+    initial_files:
+      common: [ tests/INDEX.md, tests/_fixtures/README.md, tests/unit/README.md, tests/integration/README.md, tests/e2e/README.md ]
+      by_language:
+        python:      [ tests/_config/pytest.ini, tests/_helpers/test_utils.py, tests/unit/test_example.py ]
+        js_ts:       [ tests/_config/vitest.config.ts, tests/_helpers/test-utils.ts, tests/unit/example.test.ts ]
+
+  deliverables:
+    artifacts: [ suite, exec_report, coverage_report, pipeline, data_mgmt, index ]
+    docs: [ strategy, cases, env_setup, exec_manual, troubleshooting, dir_guide ]
+    knowledge_transfer: [ framework_usage, data_mgmt, ci_cd, metrics_insight, continuous_improvement ]
+```

@@ -1,0 +1,241 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# contextcatchup.mdc
+```yaml
+# ■■■■■■■■■■■■■■■■■■ コンテキストキャッチアップファイル作成ルール ■■■■■■■■■■■■■■■■■■■■■
+# このルールが読み込まれた場合、上記ヘッダーを最初に出力してください
+
+# -----------------------------------------------------------------------------
+# 1. メタデータ
+# -----------------------------------------------------------------------------
+meta:
+  name: コンテキストキャッチアップファイル作成ルール
+  description: プロジェクトの全体像を迅速に把握するためのCLAUDE.md自動生成・更新システム
+  version: 1.0
+  parent: mainrules.mdc
+  language: ja
+  integrates_with: [ newfilecreation.mdc, taskmanagement.mdc, projectrules.mdc ]
+
+# -----------------------------------------------------------------------------
+# 2. ワークフロー
+# -----------------------------------------------------------------------------
+workflow:
+  analysis:
+    trigger: context_update_request
+    steps:
+      - scan_structure      # プロジェクト構造スキャン
+      - detect_stack        # 技術スタック抽出
+      - identify_patterns   # アーキテクチャパターン特定
+      - assess_maturity     # プロジェクト成熟度評価
+      - map_dependencies    # 依存関係マッピング
+    output: project_context
+
+  generation:
+    format: markdown
+    language: ja
+    steps:
+      - gen_root_claude      # ルートCLAUDE.md生成/更新
+      - gen_dir_claudes      # ディレクトリCLAUDE.md生成
+      - set_cross_refs       # 相互参照リンク設定
+      - validate_consistency # 一貫性検証
+    output: claude_files
+
+  maintenance:
+    auto_triggers: [ new_file, dir_change, feature_complete, manual_request ]
+    checks: [ freshness, link_validity, consistency ]
+    output: maintained_docs
+
+# -----------------------------------------------------------------------------
+# 3. CLAUDE.md テンプレート
+# -----------------------------------------------------------------------------
+claude_templates:
+  file_name: CLAUDE.md
+
+  root:
+    required_sections:
+      - project_overview
+      - architecture_summary
+      - technology_stack
+      - workflow
+      - getting_started
+      - directory_structure
+      - key_concepts
+      - commands
+      - troubleshooting
+      - resources
+
+    skeleton: |
+      # CLAUDE.md
+      
+      ## プロジェクト概要
+      ${project_overview}
+      
+      ## アーキテクチャサマリー
+      ${architecture}
+      
+      ## 技術スタック
+      ${tech_stack}
+      
+      ## 開発ワークフロー
+      ${workflow}
+      
+      ## ディレクトリ構造
+      ```
+      ${directory_tree}
+      ```
+      
+      ## 共通コマンド
+      ```bash
+      ${commands}
+      ```
+      
+      ## トラブルシューティング
+      ${troubleshooting}
+      
+      ---
+      *自動生成: contextcatchup.mdc v${version} / 更新: ${updated_at}*
+
+  directory:
+    required_sections:
+      - purpose
+      - contents
+      - key_files
+      - usage
+      - notes
+      - related
+
+    skeleton: |
+      # ${dir_name}/CLAUDE.md
+      
+      ## 目的
+      ${purpose}
+      
+      ## 内容概要
+      ```
+      ${tree}
+      ```
+      
+      ## 重要ファイル
+      ${key_files}
+      
+      ## 使用パターン
+      ${usage}
+      
+      ## 開発メモ
+      ${notes}
+      
+      ## 関連ディレクトリ
+      ${related}
+      
+      ---
+      *生成: ${generated_at}*
+
+# -----------------------------------------------------------------------------
+# 4. 解析エンジン
+# -----------------------------------------------------------------------------
+analysis_engine:
+  scanner:
+    depth: unlimited
+    ignore: [ .git/, node_modules/, dist/, build/, .next/, "*.log" ]
+  detectors:
+    languages: true
+    frameworks: true
+    databases: true
+    deployment: true
+  patterns:
+    recognise: [ mvc, microservices, layered, hexagonal, clean, spa, ssr ]
+
+# -----------------------------------------------------------------------------
+# 5. 自動更新
+# -----------------------------------------------------------------------------
+auto_update:
+  triggers:
+    filesystem: [ new_file, dir_change, config_update ]
+    milestones: [ feature_done, release_prep, arch_change ]
+    manual:     [ explicit, periodic_review, onboarding ]
+  strategy:
+    detect_changes: [ hash, timestamp, diff ]
+    regenerate: affected_only
+    validate: [ links, accuracy, format ]
+
+# -----------------------------------------------------------------------------
+# 6. 品質保証
+# -----------------------------------------------------------------------------
+quality_assurance:
+  checks: [ accuracy, completeness, readability ]
+  maintenance:
+    audits: [ monthly, quarterly, annual ]
+    automated: [ broken_links, outdated_info, inconsistency ]
+    feedback: [ user_feedback, analytics ]
+
+# -----------------------------------------------------------------------------
+# 7. エラーハンドリング
+# -----------------------------------------------------------------------------
+error_handling:
+  generation:
+    - id: incomplete_analysis      # 分析不足
+      fix: incremental_analysis
+    - id: template_failure         # テンプレート生成失敗
+      fix: syntax_check
+    - id: file_access              # ファイル権限不足
+      fix: permission_review
+  maintenance:
+    - id: update_conflict
+      fix: manual_merge
+    - id: consistency_violation
+      fix: sync_related
+
+# -----------------------------------------------------------------------------
+# 8. タスク統合
+# -----------------------------------------------------------------------------
+integration:
+  tasks:
+    context_update:
+      auto_create: true
+      template: |
+        ### コンテキスト更新タスク: ${target}
+        - 更新範囲: ${scope}
+        - 影響: ${impact}
+        - トリガー: ${trigger}
+
+  newfile:
+    metadata_header: |
+      # content: |-
+      #   ${dir_name}概要ドキュメント
+      # dependency: [${dependencies}]
+
+# -----------------------------------------------------------------------------
+# 9. 設定
+# -----------------------------------------------------------------------------
+config:
+  style: default
+  depth: standard
+  update_frequency: weekly
+  automation:
+    sensitivity: normal
+    validation: strict
+
+# -----------------------------------------------------------------------------
+# 10. KPI
+# -----------------------------------------------------------------------------
+kpi:
+  adoption:   { usage_freq, satisfaction, onboarding_time }
+  quality:    { accuracy >= 95, freshness >= weekly, ref_validity >= 98 }
+  efficiency: { auto_rate >= 80, overhead <= 5, gen_speed <= 60 }
+
+# -----------------------------------------------------------------------------
+# 11. バージョン管理 & 拡張性
+# -----------------------------------------------------------------------------
+versioning:
+  track_changes: true
+  rollback: true
+  diff_view: true
+plugins:
+  allow_custom_analyzers: true
+  allow_template_ext: true
+  allow_formatters: true
+
+

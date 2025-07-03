@@ -1,0 +1,403 @@
+---
+description: 
+globs: *.html, *.css
+alwaysApply: false
+---
+# phase3uiconstruction.mdc
+```yaml
+# ■■■■■■■■■■■■■■■■■■ フェーズ3: UI構築ルール ■■■■■■■■■■■■■■■■■■■■■
+# このルールが読み込まれた場合、上記のヘッダーを最初に出力してください
+
+rule_info:
+  name: "フェーズ3: UI構築ルール"
+  description: "ユーザーインターフェースの設計と基本構造の実装を行うフェーズ"
+  parent_rule: "mainrules.mdc"
+  version: "1.0"
+
+# フェーズ3定義
+phase_3_ui_construction:
+  name: "UI構築フェーズ"
+  id: "phase_3"
+  prerequisite: "phase_2.complete"
+  description: "ユーザーインターフェースの設計と基本構造の実装"
+  completion_criteria:
+    - ui_structure.complete == true
+    - basic_styling.applied == true
+    - responsive_design.implemented == true
+    - ui_components.functional == true
+    
+  operations:
+    - think:
+        purpose: "UI設計と構築計画"
+        steps:
+          - analyze_ui_requirements:
+              input: ${documentation}
+              extract: ["screen_layouts", "user_flows", "ui_components"]
+              prioritize: "user_experience"
+              description: "ドキュメントからUI要件を抽出"
+          
+          - design_ui_structure:
+              create: "wireframe_structure"
+              define: ["layout_grid", "component_hierarchy", "navigation_flow"]
+              consider: ["accessibility", "usability", "responsiveness"]
+              description: "UI構造の設計"
+          
+          - select_ui_technologies:
+              base: ["HTML5", "CSS3", "JavaScript"]
+              frameworks: "evaluate_necessity"
+              libraries: ["consider_lightweight_options"]
+              styling_approach: ["vanilla_css", "css_framework", "custom_design"]
+              description: "UI技術の選定"
+          
+          - plan_implementation_order:
+              priority: ["layout_structure", "basic_components", "styling", "interactions"]
+              dependencies: "identify_component_relationships"
+              description: "実装順序の計画"
+        
+        output: "ui_construction_plan"
+        completion_check: true
+    
+    - implement_ui_structure:
+        steps:
+          - create_html_skeleton:
+              semantic_markup: true
+              accessibility_attributes: true
+              structure: "based_on_wireframe"
+              validation: "html5_standards"
+              description: "HTMLの基本構造作成"
+          
+          - implement_layout_system:
+              method: ["flexbox", "grid", "hybrid"]
+              responsive_breakpoints: ["mobile", "tablet", "desktop"]
+              container_strategy: "fluid_responsive"
+              description: "レイアウトシステムの実装"
+          
+          - develop_ui_components:
+              component_types: "based_on_requirements"
+              reusability: "high_priority"
+              consistency: "design_system_approach"
+              interactive_elements: "prepare_for_js"
+              description: "UIコンポーネントの開発"
+          
+          - apply_base_styling:
+              typography: "readable_hierarchy"
+              color_scheme: "accessible_contrast"
+              spacing: "consistent_rhythm"
+              visual_feedback: "hover_focus_states"
+              description: "基本スタイリングの適用"
+        
+        output: "functional_ui_structure"
+        validation_required: true
+    
+    - ui_testing_and_refinement:
+        tests:
+          - responsive_behavior: "all_breakpoints"
+          - accessibility_compliance: "basic_a11y_standards"
+          - visual_consistency: "cross_browser_check"
+          - interactive_elements: "hover_focus_keyboard"
+        
+        refinement:
+          - visual_polish: "based_on_test_results"
+          - performance_optimization: "css_optimization"
+          - code_cleanup: "remove_unused_styles"
+        
+        completion_check: true
+
+# UI構築テンプレート
+ui_construction_templates:
+  wireframe_structure:
+    format: "ascii_art_or_description"
+    components:
+      - header: "サイトタイトル、ナビゲーション"
+      - main_content: "メインコンテンツエリア"
+      - sidebar: "補助コンテンツ（必要に応じて）"
+      - footer: "フッター情報"
+    
+  component_library:
+    basic_components:
+      - button: "各種ボタンスタイル"
+      - form_elements: "入力フィールド、選択肢"
+      - navigation: "メニュー、ブレッドクラム"
+      - cards: "コンテンツカード"
+      - modals: "ダイアログ、ポップアップ"
+    
+    layout_components:
+      - grid_system: "レスポンシブグリッド"
+      - containers: "各種コンテナ"
+      - spacing_utilities: "マージン、パディング"
+    
+  responsive_breakpoints:
+    mobile: "320px - 767px"
+    tablet: "768px - 1023px"
+    desktop: "1024px以上"
+    
+  accessibility_checklist:
+    - semantic_html: "適切なHTML要素の使用"
+    - alt_attributes: "画像のalt属性"
+    - color_contrast: "十分なコントラスト比"
+    - keyboard_navigation: "キーボード操作対応"
+    - focus_indicators: "フォーカス表示"
+    - screen_reader: "スクリーンリーダー対応"
+
+# 思考プロセステンプレート
+thinking_process_template:
+  phase_3_thinking: |
+    <thinking>
+    ## フェーズ3: UI構築 実行中
+    
+    ### 1. UI要件の分析（フェーズ2の成果物から）
+    必要な画面:
+    ${foreach screen in screens}
+    - ${screen.name}: ${screen.purpose}
+    ${endforeach}
+    
+    UIコンポーネント:
+    ${foreach component in ui_components}
+    - ${component.name}: ${component.usage}
+    ${endforeach}
+    
+    ### 2. ワイヤーフレーム設計
+    レイアウト構造:
+    ```
+    [具体的なワイヤーフレーム図またはASCIIアート]
+    ```
+    
+    ### 3. 技術選定
+    HTML構造: ${html_approach}
+    CSSアプローチ: ${css_approach}
+    レスポンシブ戦略: ${responsive_strategy}
+    
+    ### 4. 実装計画
+    実装順序:
+    1. ${first_implementation}
+    2. ${second_implementation}
+    3. ${third_implementation}
+    
+    ### 5. アクセシビリティ考慮事項
+    ${foreach a11y_item in accessibility_considerations}
+    - ${a11y_item}
+    ${endforeach}
+    
+    ### 完了チェック
+    - [ ] すべての必要な画面が設計されたか
+    - [ ] レスポンシブデザインが考慮されているか
+    - [ ] アクセシビリティ要件を満たしているか
+    - [ ] JavaScriptとの連携準備ができているか
+    </thinking>
+
+# 完了基準の詳細定義
+detailed_completion_criteria:
+  ui_structure_complete:
+    check: "HTML構造が完成している"
+    validation: "セマンティックマークアップ準拠"
+    required_elements:
+      - document_structure: "適切なHTML5構造"
+      - semantic_elements: "header, nav, main, footer等の使用"
+      - component_markup: "各UIコンポーネントのマークアップ"
+      
+  basic_styling_applied:
+    check: "基本的なCSSが適用済み"
+    validation: "デザイン一貫性が保たれている"
+    required_elements:
+      - typography_system: "フォント階層の確立"
+      - color_system: "カラーパレットの適用"
+      - spacing_system: "一貫したスペーシング"
+      - visual_hierarchy: "視覚的階層の確立"
+      
+  responsive_design_implemented:
+    check: "全ブレークポイントで正常表示"
+    validation: "モバイルファースト対応"
+    required_elements:
+      - mobile_layout: "モバイル表示の最適化"
+      - tablet_adaptation: "タブレット向け調整"
+      - desktop_optimization: "デスクトップ表示の最適化"
+      - fluid_elements: "流動的な要素のサイズ調整"
+      
+  ui_components_functional:
+    check: "UIコンポーネントが機能的"
+    validation: "インタラクション準備完了"
+    required_elements:
+      - interactive_states: "hover, focus, active状態"
+      - form_elements: "フォーム要素の基本機能"
+      - navigation_system: "ナビゲーションの動作"
+      - component_isolation: "コンポーネントの独立性"
+
+# エラーハンドリング（フェーズ3固有）
+phase_3_specific_errors:
+  error_types:
+    - responsive_design_failure:
+        description: "レスポンシブデザインの破綻"
+        resolution: "メディアクエリとレイアウトシステムの見直し"
+        common_causes:
+          - "固定幅の使用"
+          - "不適切なブレークポイント"
+          - "オーバーフローの未処理"
+        
+    - accessibility_issues:
+        description: "アクセシビリティ要件の不備"
+        resolution: "WCAG基準に基づいた修正"
+        common_issues:
+          - "コントラスト比不足"
+          - "キーボードトラップ"
+          - "スクリーンリーダー非対応"
+        
+    - component_structure_problems:
+        description: "コンポーネント構造の問題"
+        resolution: "コンポーネント設計の見直し"
+        symptoms:
+          - "再利用性の低下"
+          - "スタイルの干渉"
+          - "保守性の問題"
+
+# UI実装パターン
+ui_implementation_patterns:
+  layout_patterns:
+    flex_container:
+      code: |
+        .container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 1rem;
+        }
+    
+    grid_layout:
+      code: |
+        .grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 1rem;
+        }
+    
+  component_patterns:
+    card_component:
+      html: |
+        <article class="card">
+          <header class="card-header">
+            <h3 class="card-title">タイトル</h3>
+          </header>
+          <div class="card-body">
+            <p>コンテンツ</p>
+          </div>
+          <footer class="card-footer">
+            <button class="btn btn-primary">アクション</button>
+          </footer>
+        </article>
+      
+      css: |
+        .card {
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          padding: 1rem;
+          background: white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    
+  responsive_patterns:
+    mobile_first:
+      approach: |
+        /* モバイルファースト */
+        .element {
+          /* モバイルスタイル */
+        }
+        
+        @media (min-width: 768px) {
+          .element {
+            /* タブレット以上のスタイル */
+          }
+        }
+        
+        @media (min-width: 1024px) {
+          .element {
+            /* デスクトップスタイル */
+          }
+        }
+
+# フェーズ3実行例
+execution_example:
+  project: "タスク管理アプリ"
+  
+  ui_analysis:
+    screens:
+      - name: "メイン画面"
+        components: ["ヘッダー", "タスク入力フォーム", "タスクリスト", "フィルター"]
+    
+  wireframe:
+    ascii_representation: |
+      +---------------------------+
+      |      Task Manager         |
+      +---------------------------+
+      | [+ Add Task         ] [+] |
+      +---------------------------+
+      | Filter: [All ▼]           |
+      +---------------------------+
+      | □ Task 1            [✏️][🗑️] |
+      | ☑ Task 2            [✏️][🗑️] |
+      | □ Task 3            [✏️][🗑️] |
+      +---------------------------+
+  
+  implementation:
+    html_structure: |
+      <div class="app-container">
+        <header class="app-header">
+          <h1>Task Manager</h1>
+        </header>
+        <main class="app-main">
+          <form class="task-form">
+            <input type="text" class="task-input" placeholder="Add a new task">
+            <button type="submit" class="btn btn-add">+</button>
+          </form>
+          <div class="task-filter">
+            <select class="filter-select">
+              <option>All</option>
+              <option>Active</option>
+              <option>Completed</option>
+            </select>
+          </div>
+          <ul class="task-list">
+            <!-- タスクアイテムが動的に追加される -->
+          </ul>
+        </main>
+      </div>
+
+# 次フェーズへの引き継ぎ
+handover_to_phase_4:
+  required_outputs:
+    - html_structure: "完成したHTML構造"
+    - css_styles: "適用されたスタイルシート"
+    - component_inventory: "UIコンポーネントの一覧"
+    - interaction_points: "JavaScript連携ポイント"
+    
+  validation_before_handover:
+    - "すべてのUIコンポーネントが実装されているか"
+    - "レスポンシブデザインが機能しているか"
+    - "JavaScriptとの連携準備ができているか"
+    - "アクセシビリティ基準を満たしているか"
+
+# フェーズ3の出力フォーマット
+output_format:
+  ui_construction_summary:
+    components_created:
+      total: "作成されたコンポーネント数"
+      list:
+        - name: "コンポーネント名"
+          type: "コンポーネントタイプ"
+          status: "実装済み/テスト中"
+    
+    responsive_status:
+      mobile: "対応状況"
+      tablet: "対応状況"
+      desktop: "対応状況"
+    
+    accessibility_score:
+      color_contrast: "合格/不合格"
+      keyboard_navigation: "対応/未対応"
+      screen_reader: "対応/未対応"
+    
+    ready_for_javascript:
+      interaction_points: "JavaScript連携ポイント数"
+      data_attributes: "設定済み/未設定"
+      event_targets: "準備完了/未完了"
+
+
+
+```

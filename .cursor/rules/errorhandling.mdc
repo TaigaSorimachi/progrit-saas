@@ -1,0 +1,545 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# errorhandling.mdc
+```yaml
+# ■■■■■■■■■■■■■■■■■■ エラーハンドリングシステムルール ■■■■■■■■■■■■■■■■■■■■■
+# このルールが読み込まれた場合、上記のヘッダーを最初に出力してください
+
+rule_info:
+  name: "エラーハンドリングシステムルール"
+  description: "エラーの解決と知識ベース管理を行う包括的なシステム"
+  parent_rule: "mainrules.mdc"
+  version: "1.0"
+
+# エラー解決プロセス
+error_resolution_process:
+  input: ${error_info}
+  max_attempts: 3
+  
+  resolution_loop:
+    - iteration: 1
+        operations:
+          - think:
+              purpose: "エラー分析"
+              steps:
+                - parse_error_message: ${error_info}
+                - identify_error_type:
+                    categories: ["syntax", "runtime", "logic", "dependency", "compatibility"]
+                - extract_key_components:
+                    - error_location
+                    - error_context
+                    - stack_trace
+              output: "error_analysis"
+          
+          - web_search:
+              condition: "error_analysis.complete"
+              query_generation:
+                template: "${error_type} ${key_component} ${context}"
+                fallback: "${error_message} solution"
+              sources_priority: ["official_docs", "stackoverflow", "github_issues"]
+              
+          - apply_solution:
+              method: "targeted_fix"
+              validate: true
+              
+    - iteration: 2
+        condition: "iteration_1.failed"
+        operations:
+          - think:
+              purpose: "深層分析"
+              steps:
+                - analyze_previous_attempt: ${iteration_1.result}
+                - identify_root_cause:
+                    deeper_analysis: true
+                    check_dependencies: true
+                - generate_alternative_approach
+              output: "deep_analysis"
+              
+          - web_search:
+              query_generation:
+                method: "refined"
+                include_context: true
+                template: "${library_name} ${error_type} ${version} fix"
+              
+          - apply_solution:
+              method: "alternative_approach"
+              rollback_on_failure: true
+              
+    - iteration: 3
+        condition: "iteration_2.failed"
+        operations:
+          - think:
+              purpose: "包括的解決策"
+              steps:
+                - review_all_attempts
+                - identify_patterns
+                - consider_workaround
+                - evaluate_refactoring_need
+              output: "comprehensive_analysis"
+              
+          - web_search:
+              query_generation:
+                method: "broad"
+                queries:
+                  - "${error_pattern} common solutions"
+                  - "${technology} ${error_type} workaround"
+                  - "${feature} alternative implementation"
+              
+          - solution_strategy:
+              options:
+                - workaround_implementation
+                - feature_redesign
+                - dependency_replacement
+                - graceful_degradation
+              select_best: true
+
+# エラータイプ別の処理
+error_type_handlers:
+  syntax_error:
+    quick_fixes: ["括弧の確認", "セミコロン", "引用符"]
+    search_focus: "syntax rules"
+    common_patterns:
+      - missing_bracket: "括弧の不一致"
+      - unexpected_token: "予期しないトークン"
+      - unterminated_string: "文字列の終端なし"
+    
+  runtime_error:
+    checks: ["null/undefined", "型の不一致", "スコープ"]
+    search_focus: "runtime behavior"
+    common_patterns:
+      - null_reference: "nullまたはundefinedの参照"
+      - type_error: "型の不一致"
+      - out_of_bounds: "配列範囲外アクセス"
+    
+  dependency_error:
+    actions: ["バージョン確認", "インポート方法", "CDN可用性"]
+    search_focus: "library documentation"
+    resolution_steps:
+      - check_package_json: "依存関係の定義確認"
+      - verify_import_syntax: "インポート構文の確認"
+      - check_module_availability: "モジュールの利用可能性"
+    
+  compatibility_error:
+    verify: ["ブラウザサポート", "ポリフィル", "代替手段"]
+    search_focus: "compatibility tables"
+    tools:
+      - caniuse: "ブラウザ互換性チェック"
+      - babel: "トランスパイル設定"
+      - polyfill_io: "ポリフィルの追加"
+
+# 解決後の処理
+post_resolution:
+  - document_solution:
+      format: "structured_report"
+      location: "error_knowledge_base"
+      content:
+        - error_signature: "${error_type}_${error_message_hash}"
+        - timestamp: "${current_datetime}"
+        - error_details:
+            original_error: "${error_info}"
+            error_type: "${identified_type}"
+            occurrence_context: "${code_context}"
+        - resolution_journey:
+            attempts: "${all_iterations}"
+            successful_approach: "${final_solution}"
+            time_to_resolve: "${resolution_time}"
+        - solution_details:
+            root_cause: "${identified_root_cause}"
+            fix_applied: "${actual_code_changes}"
+            preventive_measures: "${added_validations}"
+        - reusable_pattern:
+            detection_pattern: "${error_pattern}"
+            solution_template: "${generalized_solution}"
+            applicable_contexts: ["${context_list}"]
+  
+  - prevent_regression:
+      add_validation: true
+      improve_error_handling: true
+      implement_guards: "${preventive_code}"
+  
+  - update_knowledge:
+      store_pattern: true
+      index_for_search: true
+      tags: ["${error_type}", "${technology}", "${feature_area}"]
+
+# エラー知識ベース
+error_knowledge_base:
+  structure:
+    - id: "error_signature"
+    - categories:
+        by_type: ["syntax", "runtime", "logic", "dependency", "compatibility"]
+        by_technology: ["javascript", "css", "html", "library_specific"]
+        by_frequency: ["common", "occasional", "rare"]
+  
+  # 知識ベース検索システム
+  search_system:
+    before_resolution:
+      - check_existing_solutions:
+          query: "${current_error_signature}"
+          similarity_threshold: 0.8
+          actions:
+            if_exact_match:
+              - apply_known_solution: true
+              - skip_web_search: true
+              - validate_solution: true
+            if_similar_match:
+              - adapt_solution: true
+              - reduce_search_iterations: true
+              - priority_web_search: false
+  
+  # エラーパターン学習
+  pattern_learning:
+    identify_patterns:
+      - recurring_errors:
+          threshold: 3  # 3回以上発生
+          action: "create_preventive_template"
+      - related_errors:
+          group_by: "root_cause"
+          action: "create_comprehensive_guide"
+    
+    preventive_templates:
+      - template_name: "${pattern_name}"
+        auto_apply:
+          conditions: ["${trigger_conditions}"]
+          preventive_code: "${guard_code}"
+          insert_location: "${code_location}"
+
+# エラー予防システム
+error_prevention:
+  proactive_checks:
+    - before_implementation:
+        scan_knowledge_base: true
+        identify_risk_areas: true
+        suggest_preventive_measures: true
+    
+    - during_implementation:
+        real_time_validation: true
+        pattern_matching: true
+        warning_on_risky_patterns: true
+    
+    - after_implementation:
+        comprehensive_testing: true
+        edge_case_detection: true
+        knowledge_base_update: true
+
+# ドキュメント生成フォーマット
+error_documentation_template:
+  format: "markdown"
+  structure: |
+    ## エラー解決レポート #${report_id}
+    
+    ### エラー概要
+    - **発生日時**: ${timestamp}
+    - **エラータイプ**: ${error_type}
+    - **エラーメッセージ**: `${error_message}`
+    - **発生場所**: ${file_location}
+    
+    ### 解決プロセス
+    ${foreach attempt in resolution_attempts}
+    #### 試行 ${attempt.number}
+    - **アプローチ**: ${attempt.approach}
+    - **実行内容**: ${attempt.actions}
+    - **結果**: ${attempt.result}
+    ${endforeach}
+    
+    ### 最終解決策
+    ```${code_language}
+    ${solution_code}
+    ```
+    
+    ### 根本原因
+    ${root_cause_analysis}
+    
+    ### 予防策
+    ${preventive_measures}
+    
+    ### 再利用可能なパターン
+    - **検出パターン**: `${detection_pattern}`
+    - **解決テンプレート**: 
+    ```${code_language}
+    ${solution_template}
+    ```
+    
+    ### タグ
+    ${tags}
+    
+    ---
+  
+  storage:
+    location: "error_knowledge_base"
+    indexing: true
+    searchable: true
+
+# 共通エラーパターンライブラリ
+common_error_patterns:
+  dom_timing_issues:
+    pattern: "Cannot read property .* of null"
+    root_cause: "DOM要素アクセス時のタイミング問題"
+    solution_template: |
+      // DOM要素安全アクセステンプレート
+      function safeElementAccess(selector, callback) {
+        document.addEventListener('DOMContentLoaded', () => {
+          const element = document.querySelector(selector);
+          if (element) {
+            callback(element);
+          } else {
+            console.warn(`要素が見つかりません: ${selector}`);
+          }
+        });
+      }
+    
+  async_handling:
+    pattern: "Unhandled Promise rejection"
+    root_cause: "非同期処理のエラーハンドリング不足"
+    solution_template: |
+      // 非同期処理安全実行テンプレート
+      async function safeAsyncOperation(operation) {
+        try {
+          const result = await operation();
+          return { success: true, data: result };
+        } catch (error) {
+          console.error('非同期エラー:', error);
+          return { success: false, error: error.message };
+        }
+      }
+    
+  type_mismatch:
+    pattern: "is not a function|undefined is not"
+    root_cause: "型の不一致または未定義のメソッド呼び出し"
+    solution_template: |
+      // 型チェックテンプレート
+      function safeMethodCall(object, methodName, ...args) {
+        if (object && typeof object[methodName] === 'function') {
+          return object[methodName](mdc:...args);
+        } else {
+          console.warn(`メソッドが存在しません: ${methodName}`);
+          return null;
+        }
+      }
+
+# エラー解決例
+error_resolution_examples:
+  # 1回目のエラー発生
+  first_occurrence:
+    error: "TypeError: Cannot read property 'classList' of null"
+    
+    knowledge_check:
+      result: "no_existing_solution"
+    
+    resolution_process:
+      iteration_1:
+        think: "要素が見つからない"
+        search: "Cannot read property classList of null"
+        attempt: "getElementById確認"
+        result: "failed"
+      
+      iteration_2:
+        think: "DOMロードタイミング問題"
+        search: "DOM ready classList null"
+        attempt: "DOMContentLoaded追加"
+        result: "success"
+    
+    documentation_created:
+      id: "ERR_001_CLASSLIST_NULL"
+      root_cause: "DOM要素アクセス時のタイミング問題"
+      solution: |
+        document.addEventListener('DOMContentLoaded', () => {
+          const element = document.getElementById('target');
+          if (element) {
+            element.classList.add('active');
+          }
+        });
+      prevention: "常にDOMContentLoadedイベント内で要素操作を行う"
+      pattern: "element.classList操作前のnullチェック"
+  
+  # 2回目の類似エラー発生
+  second_occurrence:
+    error: "TypeError: Cannot read property 'style' of null"
+    
+    knowledge_check:
+      result: "similar_pattern_found"
+      matched_id: "ERR_001_CLASSLIST_NULL"
+      similarity: 0.85
+    
+    quick_resolution:
+      applied_pattern: "DOM要素アクセス時のタイミング問題"
+      adapted_solution: |
+        document.addEventListener('DOMContentLoaded', () => {
+          const element = document.querySelector('.target');
+          if (element) {
+            element.style.display = 'block';
+          }
+        });
+      time_saved: "90%"
+      iterations_needed: 1
+
+# 予防的コード生成
+preventive_code_generation:
+  identified_pattern: "DOM要素アクセス"
+  
+  auto_generated_template:
+    name: "安全なDOM要素アクセス"
+    code: |
+      // エラー予防テンプレート: DOM要素安全アクセス
+      function safeElementAccess(selector, callback) {
+        document.addEventListener('DOMContentLoaded', () => {
+          const element = document.querySelector(selector);
+          if (element) {
+            callback(element);
+          } else {
+            console.warn(`要素が見つかりません: ${selector}`);
+          }
+        });
+      }
+      
+      // 使用例
+      safeElementAccess('#myButton', (el) => {
+        el.classList.add('active');
+        el.style.backgroundColor = 'blue';
+      });
+    
+  applied_to_new_code: true
+  errors_prevented: ["null reference", "undefined property access"]
+
+# 知識ベース統計
+knowledge_base_stats:
+  tracking_metrics:
+    - total_errors_documented: "ドキュメント化されたエラー総数"
+    - reuse_rate: "解決策の再利用率"
+    - average_resolution_time: "平均解決時間"
+    - prevention_effectiveness: "予防策の有効性"
+  
+  reporting_format: |
+    ## エラー知識ベース統計
+    - 総エラー数: ${total_errors}
+    - 再利用率: ${reuse_percentage}%
+    - 平均解決時間:
+      - 知識ベースなし: ${time_without_kb}
+      - 知識ベースあり: ${time_with_kb}
+    - 最頻出パターン:
+      ${foreach pattern in top_patterns}
+      - ${pattern.name}: ${pattern.count}回
+      ${endforeach}
+
+# フェーズ別エラーハンドリング
+phase_specific_error_handling:
+  phase_1_errors:
+    - "要求の曖昧性"
+    - "技術選択の不確実性"
+    resolution: "ユーザーとの対話で明確化"
+    
+  phase_2_errors:
+    - "ドキュメント選択ミス"
+    - "テンプレート不適合"
+    resolution: "ドキュメント再選択、カスタマイズ"
+    
+  phase_3_errors:
+    - "レスポンシブデザイン破綻"
+    - "アクセシビリティ不備"
+    - "コンポーネント構造問題"
+    resolution: "UI構造見直し、段階的修正"
+    
+  phase_4_errors:
+    - "JavaScript実行エラー"
+    - "DOM操作エラー"
+    - "データ整合性エラー"
+    resolution: "error_resolution_process適用"
+
+# フェーズロールバックシナリオ
+phase_rollback_scenarios:
+  triggers:
+    - "completion_criteria_failure"
+    - "critical_architecture_change"
+    - "user_requirement_major_change"
+  
+  rollback_process:
+    - save_current_progress
+    - identify_rollback_target_phase
+    - restore_phase_state
+    - communicate_rollback_reason
+    - plan_recovery_strategy
+
+# 統合実行例
+integrated_development_with_prevention:
+  user_input: "タスク管理できるやつ"
+  
+  development_process:
+    step_1:
+      before_coding:
+        - knowledge_base_scan:
+            relevant_patterns: ["DOM操作", "イベントリスナー", "データ永続化"]
+            preventive_measures_applied:
+              - "DOMContentLoadedラッパー"
+              - "nullチェックガード"
+              - "try-catchブロック"
+      
+      implementation:
+        code_with_prevention: |
+          // 知識ベースから自動適用された予防コード
+          document.addEventListener('DOMContentLoaded', () => {
+            initializeTaskManager();
+          });
+          
+          function initializeTaskManager() {
+            // 安全な要素取得（過去のエラーパターンから学習）
+            const elements = {
+              taskInput: document.querySelector('#taskInput'),
+              addButton: document.querySelector('#addButton'),
+              taskList: document.querySelector('#taskList')
+            };
+            
+            // 要素の存在確認（自動生成された検証）
+            const missingElements = Object.entries(elements)
+              .filter(([key, el]) => !el)
+              .map(([key]) => key);
+            
+            if (missingElements.length > 0) {
+              console.error('必須要素が見つかりません:', missingElements);
+              return;
+            }
+            
+            // イベントリスナーの安全な追加
+            elements.addButton.addEventListener('click', () => {
+              try {
+                addTask(elements.taskInput.value);
+              } catch (error) {
+                handleError(error, 'TASK_ADD_ERROR');
+              }
+            });
+          }
+
+# エラーインデックス構造
+error_index_structure: |
+  # エラー知識ベースインデックス
+  
+  ## エラーパターン一覧
+  
+  ### Runtime Errors
+  ${foreach error in runtime_errors}
+  - @${error.id} - ${error.description}
+  ${endforeach}
+  
+  ### API Errors
+  ${foreach error in api_errors}
+  - @${error.id} - ${error.description}
+  ${endforeach}
+  
+  ### Dependency Errors
+  ${foreach error in dependency_errors}
+  - @${error.id} - ${error.description}
+  ${endforeach}
+  
+  ## 頻出パターン
+  ${foreach pattern in frequent_patterns}
+  ${pattern.rank}. ${pattern.name} (発生回数: ${pattern.count})
+  ${endforeach}
+  
+  ## 予防テンプレート
+  ${foreach template in prevention_templates}
+  - @${template.name}
+  ${endforeach}
+
+```

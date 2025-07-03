@@ -1,0 +1,293 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# mainrules.mdc
+```yaml
+# ■■■■■■■■■■■■■■■■■■ メインルール ■■■■■■■■■■■■■■■■■■■■■
+# このルールが読み込まれた場合、上記のヘッダーを最初に出力してください
+
+# プログラミング的プロンプト - アプリケーション開発システム
+
+# システム定義
+system:
+  name: "アプリケーション段階的開発システム"
+  version: "2.1"
+  language: "ja"
+  output_format: "artifact"
+  phase_control: "sequential"  # 各フェーズの完了を待つ
+
+# 入力処理定義
+input:
+  user_request: ${user_input}
+  type: "text"
+  ambiguity_level: "high"  # 曖昧な要求を前提
+
+# プロジェクトルールの確認
+project_specific_rules:
+  check_for: "projectrules.mdc"
+  priority: "high"
+  description: "プロジェクト固有のルールが存在する場合は優先的に適用"
+
+# メインプロセス定義（概要）
+main_process:
+  phases:
+    - phase_1:
+        name: "初期分析フェーズ"
+        rule_file: "phase1analysis.mdc"
+        description: "ユーザー要求の分析と技術要件の特定"
+        prerequisite: null
+        
+    - phase_2:
+        name: "ドキュメント整備フェーズ"
+        rule_file: "phase2documentation.mdc"
+        description: "開発方針の明確化とドキュメント生成"
+        prerequisite: "phase_1.complete"
+        
+    - phase_3:
+        name: "UI構築フェーズ"
+        rule_file: "phase3uiconstruction.mdc"
+        description: "ユーザーインターフェースの設計と実装"
+        prerequisite: "phase_2.complete"
+        
+    - phase_4:
+        name: "実装フェーズ"
+        rule_file: "phase4implementation.mdc"
+        description: "機能実装とインタラクションの追加"
+        prerequisite: "phase_3.complete"
+
+# フェーズ実行制御
+phase_execution_control:
+  current_phase_tracking:
+    enabled: true
+    state_management: "CONTEXT.yaml"
+    
+  phase_transition:
+    automatic: false
+    requires_explicit_completion: true
+    validation_before_transition: true
+    
+  phase_selection_logic: |
+    1. user_inputを受け取る
+    2. projectrules.mdcの存在を確認
+    3. タスクの存在を確認（tasks/INDEX.md）
+    4. アクティブタスクがある場合：
+       - タスクの内容と状態を確認
+       - タスクに従って作業を継続
+    5. 新規要求の場合：
+       - 現在のフェーズを確認（初回はphase_1）
+       - 該当フェーズのルールファイルを読み込む
+    6. フェーズ固有の処理を実行
+    7. 完了基準を満たしたら次のフェーズへ
+
+# サブシステムへの参照
+subsystems:
+  project_rules:
+    rule_file: "projectrules.mdc"
+    description: "プロジェクト固有のルールと設定"
+    priority: "highest"
+    
+  task_management:
+    rule_file: "taskmanagement.mdc"
+    description: "タスクの作成・追跡・完了管理"
+    
+  error_handling:
+    rule_file: "errorhandling.mdc"
+    description: "エラー解決と知識ベース管理"
+    
+  test_management:
+    rule_file: "testmanagement.mdc"
+    description: "包括的なテスト戦略とテスト自動化システム"
+    
+  new_file_creation:
+    rule_file: "newfilecreation.mdc"
+    description: "YAML構造管理システムと連携した統一的なファイル作成・メタデータ管理システム"
+    
+  context_catchup:
+    rule_file: "contextcatchup.mdc"
+    description: "プロジェクトの全体像を把握するためのCLAUDE.mdファイル生成・更新システム"
+
+# 共通設定（全フェーズで使用）
+common_settings:
+  thinking_process:
+    visibility: "internal"  # <thinking>タグ内で実行
+    task_tracking:
+      format: "checkbox"
+      update_timing: "after_implementation"
+    progress_monitoring:
+      enabled: true
+      report_frequency: "per_step"
+      
+  output_control:
+    phase_status_reporting:
+      enabled: true
+      format: "progress_indicator"
+      include_in_response: true
+      
+    artifact_management:
+      create_timing: "after_phase_completion"
+      update_method: "phase_incremental"
+      maintain_working_state: true
+      phase_snapshots: true
+      
+    user_communication:
+      style: "non_technical"
+      clarity: "high"
+      include_progress: true
+      phase_transition_notification: true
+      task_status_notification: true  # タスク状態も通知
+
+# タスク優先実行モード
+task_priority_mode:
+  enabled: true
+  behavior:
+    - "既存タスクがある場合はフェーズよりタスクを優先"
+    - "タスクの受け入れ基準に従って作業"
+    - "タスク完了後に次のタスクまたはフェーズへ移行"
+  
+  task_execution_flow: |
+    1. タスクファイルから詳細情報を読み込む
+    2. 受け入れ基準をチェックリストとして表示
+    3. 未完了の項目から作業を再開
+    4. 実装 → テスト → ドキュメント更新のサイクル
+    5. 完了したらタスク状態を更新
+    6. 次のタスクの確認
+
+# 基本的なエラーハンドリング方針
+basic_error_handling:
+  on_ambiguity:
+    strategy: "make_reasonable_assumptions"
+    validate_with_user: "if_critical"
+    
+  on_technical_uncertainty:
+    strategy: "research_before_implement"
+    fallback: "use_best_practices"
+    
+  on_phase_error:
+    strategy: "consult_phase_specific_rules"
+    fallback: "errorhandling.mdc"
+
+# タスク実行レポートテンプレート
+task_execution_report_template: |
+  ## 現在の作業状況
+  
+  ### アクティブタスク
+  **タスクID**: ${task_id}
+  **タスク名**: ${task_name}
+  **状態**: ${task_state}
+  **進捗**: ${completion_percentage}%
+  
+  ### 本日の作業
+  ${foreach work in todays_work}
+  - ${work.description}
+  ${endforeach}
+  
+  ### 次のステップ
+  ${foreach step in next_steps}
+  - ${step}
+  ${endforeach}
+  
+  ---
+
+# フェーズ完了レポートテンプレート
+phase_completion_report_template: |
+  ## フェーズ ${phase_id} 完了レポート
+  **フェーズ名**: ${phase_name}
+  **開始時刻**: ${start_time}
+  **完了時刻**: ${completion_time}
+  **所要時間**: ${duration}
+  
+  ### 完了基準チェック
+  ${foreach criteria in completion_criteria}
+  - [${criteria.status}] ${criteria.description}
+  ${endforeach}
+  
+  ### 成果物
+  ${deliverables_list}
+  
+  ### 次フェーズへの引き継ぎ事項
+  ${handover_items}
+  
+  ---
+
+# タスク連携システム
+task_integration:
+  task_check:
+    priority: "high"
+    check_locations:
+      - "tasks/INDEX.md"  # タスクインデックス
+      - "tasks/"          # 個別タスクファイル
+      - "CONTEXT.yaml"    # 現在のタスク状態
+    
+  active_task_handling:
+    on_active_task_found:
+      steps:
+        1. "アクティブタスクの詳細を読み込む"
+        2. "タスクの現在状態を確認"
+        3. "受け入れ基準と進捗を評価"
+        4. "次のアクションを決定"
+      
+      decision_tree:
+        if_in_progress:
+          - "タスクの継続実装"
+          - "進捗ログの更新"
+          - "完了チェックリストの確認"
+        
+        if_blocked:
+          - "ブロッカーの確認"
+          - "errorhandling.mdcの適用"
+          - "代替アプローチの検討"
+        
+        if_pending:
+          - "タスクの開始"
+          - "状態をin_progressに更新"
+          - "実装計画の策定"
+    
+  task_context_output: |
+    <thinking>
+    ## 現在のタスク状況
+    アクティブタスク数: ${active_task_count}
+    
+    ${if active_task_count > 0}
+    ### 作業中のタスク
+    - タスクID: ${current_task.id}
+    - タスク名: ${current_task.name}
+    - 状態: ${current_task.state}
+    - 優先度: ${current_task.priority}
+    - 進捗: ${current_task.progress}
+    
+    ### 次のアクション
+    ${next_actions}
+    ${endif}
+    </thinking>
+
+# 実行開始時の処理
+execution_start:
+  steps:
+    1. "■■■■■■■■■■■■■■■■■■ メインルール ■■■■■■■■■■■■■■■■■■■■■ を出力"
+    2. "projectrules.mdcの存在確認"
+    3. "プロジェクト新規作成の場合はprojectrules.mdcが別のプロジェクトの物の場合があるのでその場合はprojectrules.mdc"
+    3. "プロジェクト固有ルールがある場合は読み込み"
+    4. "タスクインデックスの確認"
+    5. "アクティブタスクがある場合："
+       - "タスク詳細を表示"
+       - "作業継続の確認"
+    6. "user_inputを分析"
+    7. "タスクまたはフェーズに基づいて処理を決定"
+    8. "適切なルールを読み込み"
+    9. "処理を開始"
+
+# ルール統合の優先順位
+rule_integration_priority:
+  1. projectrules: "プロジェクト固有の設定が最優先"
+  2. phase_rules: "現在のフェーズに応じたルール"
+  3. subsystem_rules: "必要に応じてサブシステムルール"
+  4. mainrules: "基本的なフレームワーク"
+
+# デバッグ情報（開発時のみ）
+debug_info:
+  show_rule_loading: true
+  show_phase_transitions: true
+  show_completion_criteria_evaluation: true
+```

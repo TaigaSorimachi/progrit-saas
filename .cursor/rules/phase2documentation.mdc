@@ -1,0 +1,394 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# phase2documentation.mdc
+```yaml
+# ■■■■■■■■■■■■■■■■■■ フェーズ2: ドキュメント整備ルール ■■■■■■■■■■■■■■■■■■■■■
+# このルールが読み込まれた場合、上記のヘッダーを最初に出力してください
+
+rule_info:
+  name: "フェーズ2: ドキュメント整備ルール"
+  description: "プロジェクトに必要なドキュメントを動的に選定し生成するフェーズ"
+  parent_rule: "mainrules.mdc"
+  version: "1.0"
+
+# フェーズ2定義
+phase_2_documentation:
+  name: "ドキュメント整備フェーズ"
+  id: "phase_2"
+  prerequisite: "phase_1.complete"
+  completion_criteria: 
+    - documentation.complete == true
+    - required_documents.generated == true
+    - user_validation.passed == true
+    
+  operations:
+    - think:
+        purpose: "開発方針の明確化とドキュメント選定"
+        steps:
+          - analyze_project_type:
+              input: ${initial_analysis}
+              categories: ["web_app", "mobile_app", "api", "library", "tool", "game", "visualization"]
+              complexity: ["simple", "medium", "complex", "enterprise"]
+              description: "プロジェクトタイプと複雑度を分析"
+          
+          - select_documents:
+              method: "dynamic_selection"
+              based_on: ["project_type", "complexity", "features"]
+              output: "required_documents"
+              description: "必要なドキュメントを動的に選定"
+          
+          - create_documents:
+              format: "markdown"
+              naming: "${category}-${number}_${name}.md"
+              only_necessary: true
+              description: "選定されたドキュメントを生成"
+        
+        output: "documentation"
+        completion_check: true
+    
+    - validate:
+        with_user: "if_uncertain"
+        completion_required: true
+        description: "不確実な部分はユーザーに確認"
+
+# ドキュメントテンプレート定義
+document_templates:
+  # ガバナンス系
+  governance:
+    GOV-001_プロジェクト憲章:
+      when_needed: ["enterprise", "team_project"]
+      content: ["目的", "スコープ", "ステークホルダー", "成功基準"]
+    GOV-002_開発ポリシー:
+      when_needed: ["complex", "has_security_requirements"]
+      content: ["コーディング規約", "セキュリティポリシー", "品質基準"]
+
+  # 要件定義系
+  requirements:
+    REQ-001_要求仕様書:
+      when_needed: ["always"]
+      content: ["機能要件", "非機能要件", "制約事項"]
+    REQ-002_業務フロー図:
+      when_needed: ["has_business_logic", "workflow_app"]
+      content: ["現行フロー", "改善フロー", "例外処理"]
+    REQ-003_機能要件リスト:
+      when_needed: ["medium", "complex"]
+      content: ["機能ID", "機能名", "詳細", "優先度"]
+    REQ-004_ユーザーストーリー:
+      when_needed: ["agile", "user_focused"]
+      content: ["ペルソナ", "シナリオ", "受け入れ基準"]
+
+  # アーキテクチャ系
+  architecture:
+    ARC-001_システム構成図:
+      when_needed: ["has_backend", "microservices", "complex"]
+      content: ["コンポーネント図", "配置図", "通信フロー"]
+    ARC-002_技術スタック:
+      when_needed: ["always"]
+      content: ["使用技術", "バージョン", "選定理由"]
+    ARC-003_データフロー図:
+      when_needed: ["has_data_processing", "api"]
+      content: ["入力", "処理", "出力", "データ保存"]
+
+  # 設計系
+  design:
+    DSG-001_基本設計書:
+      when_needed: ["medium", "complex"]
+      content: ["画面設計", "機能設計", "データ設計"]
+    DSG-002_詳細設計書:
+      when_needed: ["complex", "modular"]
+      modules:  # プロジェクトに応じて必要なモジュールのみ作成
+        DSG-002-01_認証モジュール:
+          when: "has_authentication"
+        DSG-002-02_データ管理モジュール:
+          when: "has_data_storage"
+        DSG-002-03_API通信モジュール:
+          when: "has_api"
+        DSG-002-04_UIコンポーネント:
+          when: "has_complex_ui"
+        DSG-002-05_状態管理:
+          when: "has_state_management"
+        DSG-002-06_エラー処理:
+          when: "always"
+        DSG-002-07_セキュリティ:
+          when: "has_security_requirements"
+        DSG-002-08_パフォーマンス最適化:
+          when: "has_performance_requirements"
+        DSG-002-09_リアルタイム処理:
+          when: "has_realtime"
+        DSG-002-10_ファイル処理:
+          when: "has_file_operations"
+        DSG-002-11_通知システム:
+          when: "has_notifications"
+        DSG-002-12_検索機能:
+          when: "has_search"
+    DSG-003_画面設計書:
+      when_needed: ["has_ui", "web_app", "mobile_app"]
+      content: ["画面一覧", "画面遷移図", "ワイヤーフレーム"]
+    DSG-004_API仕様書:
+      when_needed: ["has_api", "backend"]
+      format: "yaml"
+      content: ["エンドポイント", "リクエスト/レスポンス", "エラーコード"]
+    DSG-005_データベース設計:
+      when_needed: ["has_database"]
+      content: ["ER図", "テーブル定義", "インデックス設計"]
+
+  # 実装系
+  implementation:
+    IMP-001_実装ガイドライン:
+      when_needed: ["team_project", "complex"]
+      content: ["ディレクトリ構造", "命名規則", "コーディング規約"]
+    IMP-002_開発環境構築手順:
+      when_needed: ["team_project", "has_dependencies"]
+      content: ["必要ツール", "セットアップ手順", "動作確認"]
+    IMP-003_ビルド・デプロイ手順:
+      when_needed: ["production", "complex"]
+      content: ["ビルド手順", "環境変数", "デプロイフロー"]
+
+  # テスト系
+  test:
+    TST-001_テスト計画書:
+      when_needed: ["medium", "complex", "has_quality_requirements"]
+      content: ["テスト方針", "テスト範囲", "スケジュール"]
+    TST-002_テストケース:
+      when_needed: ["has_critical_features", "complex"]
+      content: ["機能テスト", "統合テスト", "シナリオテスト"]
+    TST-003_パフォーマンステスト:
+      when_needed: ["has_performance_requirements"]
+      content: ["負荷テスト", "応答時間", "リソース使用率"]
+
+  # 運用系
+  operations:
+    OPS-001_運用マニュアル:
+      when_needed: ["production", "has_maintenance"]
+      content: ["定常運用", "障害対応", "バックアップ"]
+    OPS-002_ユーザーマニュアル:
+      when_needed: ["end_user_facing", "complex_ui"]
+      content: ["基本操作", "機能説明", "FAQ"]
+    OPS-003_トラブルシューティング:
+      when_needed: ["production", "support_required"]
+      content: ["既知の問題", "解決方法", "問い合わせ先"]
+
+  # プロジェクト特有
+  specialized:
+    # AI/ML系
+    ML-001_モデル設計書:
+      when_needed: ["has_ml", "has_ai"]
+      content: ["アルゴリズム", "学習データ", "評価指標"]
+    ML-002_データパイプライン:
+      when_needed: ["has_data_pipeline"]
+      content: ["データソース", "前処理", "特徴量エンジニアリング"]
+    
+    # ゲーム系
+    GAME-001_ゲームデザイン:
+      when_needed: ["game"]
+      content: ["ゲームメカニクス", "レベルデザイン", "バランス設計"]
+    GAME-002_アセットリスト:
+      when_needed: ["game", "has_graphics"]
+      content: ["グラフィック", "サウンド", "エフェクト"]
+    
+    # IoT系
+    IOT-001_デバイス仕様:
+      when_needed: ["iot", "embedded"]
+      content: ["ハードウェア", "通信プロトコル", "電力管理"]
+    IOT-002_エッジ処理設計:
+      when_needed: ["edge_computing"]
+      content: ["処理フロー", "データ同期", "オフライン対応"]
+
+# ドキュメント選定ロジック
+document_selection_logic:
+  process:
+    1_analyze_requirements:
+      input: ${project_requirements}
+      identify:
+        - project_type
+        - complexity_level
+        - feature_flags
+        - compliance_needs
+    
+    2_apply_rules:
+      mandatory:
+        - REQ-001_要求仕様書
+        - ARC-002_技術スタック
+        - DSG-002-06_エラー処理
+      
+      conditional:
+        if_web_app:
+          - DSG-003_画面設計書
+          - DSG-002-04_UIコンポーネント
+        
+        if_has_backend:
+          - ARC-001_システム構成図
+          - DSG-004_API仕様書
+        
+        if_team_project:
+          - GOV-001_プロジェクト憲章
+          - IMP-001_実装ガイドライン
+        
+        if_production:
+          - OPS-001_運用マニュアル
+          - TST-001_テスト計画書
+    
+    3_optimize_selection:
+      remove_redundant: true
+      merge_similar: true
+      prioritize_by_impact: true
+
+# 思考プロセステンプレート
+thinking_process_template:
+  phase_2_thinking: |
+    <thinking>
+    ## フェーズ2: ドキュメント整備 実行中
+    
+    ### 1. プロジェクト分析（フェーズ1の成果物から）
+    プロジェクトタイプ: ${project_type}
+    複雑度: ${complexity}
+    特定された機能: ${identified_features}
+    
+    ### 2. ドキュメント選定プロセス
+    必須ドキュメント:
+    - [ ] REQ-001_要求仕様書
+    - [ ] ARC-002_技術スタック
+    - [ ] DSG-002-06_エラー処理
+    
+    条件付きドキュメント:
+    ${foreach doc in conditional_documents}
+    - [ ] ${doc.name} (条件: ${doc.condition})
+    ${endforeach}
+    
+    ### 3. ドキュメント生成順序
+    1. ${first_document}
+    2. ${second_document}
+    3. ${third_document}
+    
+    ### 4. 不確実な要素
+    ${foreach uncertainty in uncertainties}
+    - ${uncertainty.description}
+      → 対応: ${uncertainty.resolution}
+    ${endforeach}
+    
+    ### 完了チェック
+    - [ ] 必要なドキュメントがすべて選定されたか
+    - [ ] ドキュメントの内容が適切か
+    - [ ] ユーザー確認が必要な項目を特定したか
+    </thinking>
+
+# 完了基準の詳細定義
+detailed_completion_criteria:
+  documentation_complete:
+    check: "必要ドキュメントが全て作成済み"
+    validation: "各ドキュメントが完全性を満たす"
+    required_checks:
+      - content_completeness: "すべての必須セクションが記載"
+      - consistency: "ドキュメント間の整合性"
+      - accuracy: "技術的な正確性"
+      
+  required_documents_generated:
+    check: "動的選択されたドキュメントが存在"
+    validation: "内容が要求に適合している"
+    required_checks:
+      - relevance: "プロジェクトに関連する内容"
+      - specificity: "汎用的でない具体的な内容"
+      - actionability: "実装に使える具体的な指針"
+      
+  user_validation_passed:
+    check: "不確実な部分のユーザー確認完了"
+    validation: "フィードバックが反映されている"
+    required_checks:
+      - clarifications_obtained: "曖昧な点の明確化"
+      - approvals_received: "重要な決定の承認"
+      - feedback_incorporated: "修正要求の反映"
+
+# エラーハンドリング（フェーズ2固有）
+phase_2_specific_errors:
+  error_types:
+    - document_selection_error:
+        description: "ドキュメント選択ミス"
+        resolution: "プロジェクト特性を再分析して選定し直す"
+        
+    - template_mismatch:
+        description: "テンプレートがプロジェクトに不適合"
+        resolution: "テンプレートをカスタマイズまたは新規作成"
+        
+    - content_generation_failure:
+        description: "ドキュメント内容の生成失敗"
+        resolution: "段階的に内容を構築し、不足情報を特定"
+
+# ドキュメント生成フォーマット例
+document_generation_example:
+  project: "タスク管理アプリ"
+  analysis_result:
+    type: "web_app"
+    complexity: "simple"
+    features: ["task_crud", "local_storage", "ui"]
+  
+  selected_documents:
+    - REQ-001_要求仕様書.md
+    - ARC-002_技術スタック.md
+    - DSG-001_基本設計書.md
+    - DSG-002-06_エラー処理.md
+    - DSG-003_画面設計書.md
+    
+  document_content_example:
+    REQ-001_要求仕様書:
+      content: |
+        # 要求仕様書
+        
+        ## 1. 機能要件
+        ### 1.1 タスク管理機能
+        - タスクの追加・編集・削除
+        - タスクの完了状態管理
+        - タスクの一覧表示
+        
+        ### 1.2 データ永続化
+        - ブラウザのlocalStorageを使用
+        - ページリロード後もデータを保持
+        
+        ## 2. 非機能要件
+        ### 2.1 ユーザビリティ
+        - 直感的で分かりやすいUI
+        - レスポンシブデザイン対応
+        - キーボードショートカット対応
+        
+        ### 2.2 パフォーマンス
+        - 初期読み込み時間: 3秒以内
+        - 操作レスポンス: 即座に反映
+        
+        ## 3. 制約事項
+        - ブラウザのみで動作（サーバー不要）
+        - モダンブラウザ対応（Chrome, Firefox, Safari, Edge）
+        - JavaScriptが有効な環境で動作
+
+# 次フェーズへの引き継ぎ
+handover_to_phase_3:
+  required_outputs:
+    - documentation_set: "生成されたドキュメント一式"
+    - design_specifications: "UI/UX設計仕様"
+    - technical_decisions: "技術的な決定事項"
+    
+  validation_before_handover:
+    - "UI構築に必要な設計情報が揃っているか"
+    - "技術スタックが明確に定義されているか"
+    - "実装の指針となる詳細設計があるか"
+
+# フェーズ2の出力フォーマット
+output_format:
+  documentation_summary:
+    total_documents: "生成ドキュメント数"
+    document_list:
+      - name: "ドキュメント名"
+        category: "カテゴリ"
+        status: "完了/レビュー中"
+    
+    key_decisions:
+      technical_stack: "選定された技術"
+      architecture: "アーキテクチャ決定"
+      ui_framework: "UIフレームワーク"
+    
+    uncertainties_resolved:
+      - issue: "不確実だった項目"
+        resolution: "解決方法"
+
+```
