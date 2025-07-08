@@ -6,12 +6,12 @@ import '@/styles/globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXTAUTH_URL || 'http://localhost:3000'),
   title: {
     default: 'SaaS Account Management System',
     template: '%s | SaaS Account Management System',
   },
-  description:
-    'Enterprise SaaS account provisioning and management platform',
+  description: 'Enterprise SaaS account provisioning and management platform',
   keywords: [
     'SaaS',
     'Account Management',
@@ -34,15 +34,13 @@ export const metadata: Metadata = {
     locale: 'ja_JP',
     url: 'https://progrit-saas.com',
     title: 'SaaS Account Management System',
-    description:
-      'Enterprise SaaS account provisioning and management platform',
+    description: 'Enterprise SaaS account provisioning and management platform',
     siteName: 'SaaS Account Management System',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'SaaS Account Management System',
-    description:
-      'Enterprise SaaS account provisioning and management platform',
+    description: 'Enterprise SaaS account provisioning and management platform',
     creator: '@TaigaSorimachi',
   },
   robots: {
@@ -63,10 +61,8 @@ export default function RootLayout({
   return (
     <html lang="ja" suppressHydrationWarning>
       <body className={inter.className}>
-        <div id="root">
-          {children}
-        </div>
+        <div id="root">{children}</div>
       </body>
     </html>
   );
-} 
+}

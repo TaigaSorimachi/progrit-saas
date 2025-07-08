@@ -7,7 +7,7 @@
 - **カテゴリ**: ui
 - **担当エージェント**: Agent-8
 - **優先度**: 高
-- **状態**: pending
+- **状態**: in_progress
 - **作成日**: 2024-12-19
 - **予想工数**: 8 時間
 
@@ -27,33 +27,33 @@ SaaS アカウント一元管理システムで使用する共通 UI コンポ�
 
 ### 1. レイアウトコンポーネント
 
-- [ ] Header (ヘッダー・ナビゲーション)
-- [ ] Sidebar (サイドバーナビゲーション)
-- [ ] Footer (フッター)
-- [ ] MainLayout (メインレイアウト)
-- [ ] DashboardLayout (ダッシュボード用レイアウト)
+- [x] Header (ヘッダー・ナビゲーション)
+- [x] Sidebar (サイドバーナビゲーション)
+- [x] Footer (フッター)
+- [x] MainLayout (メインレイアウト)
+- [x] DashboardLayout (ダッシュボード用レイアウト)
 
 ### 2. 基本 UI コンポーネント
 
-- [ ] Button (カスタムボタン)
-- [ ] Input (拡張入力フィールド)
-- [ ] Select (選択コンポーネント)
+- [x] Button (カスタムボタン) - shadcn/ui導入済み
+- [x] Input (拡張入力フィールド) - shadcn/ui導入済み
+- [x] Select (選択コンポーネント) - shadcn/ui導入済み
 - [ ] DataTable (データテーブル)
-- [ ] Modal (モーダルダイアログ)
-- [ ] Toast (通知)
-- [ ] Badge (ステータスバッジ)
-- [ ] Avatar (アバター)
+- [x] Modal (モーダルダイアログ) - shadcn/ui導入済み
+- [x] Toast (通知) - shadcn/ui導入済み
+- [x] Badge (ステータスバッジ) - shadcn/ui導入済み
+- [x] Avatar (アバター) - shadcn/ui導入済み
 
 ### 3. 業務特化コンポーネント
 
-- [ ] UserCard (ユーザーカード)
-- [ ] SaaSConnectionCard (SaaS 接続カード)
-- [ ] StatusIndicator (ステータス表示)
+- [x] UserCard (ユーザーカード)
+- [x] SaaSConnectionCard (SaaS 接続カード)
+- [x] StatusIndicator (ステータス表示)
 - [ ] PermissionBadge (権限バッジ)
 - [ ] ActivityLog (活動ログ)
-- [ ] SearchBar (検索バー)
+- [x] SearchBar (検索バー)
 - [ ] FilterPanel (フィルターパネル)
-- [ ] EmptyState (空状態)
+- [x] EmptyState (空状態)
 
 ### 4. フォームコンポーネント
 
@@ -140,24 +140,24 @@ src/components/
 ```typescript
 const colors = {
   primary: {
-    50: "#eff6ff",
-    500: "#3b82f6",
-    900: "#1e3a8a",
+    50: '#eff6ff',
+    500: '#3b82f6',
+    900: '#1e3a8a',
   },
   success: {
-    50: "#f0fdf4",
-    500: "#22c55e",
-    900: "#14532d",
+    50: '#f0fdf4',
+    500: '#22c55e',
+    900: '#14532d',
   },
   warning: {
-    50: "#fffbeb",
-    500: "#f59e0b",
-    900: "#78350f",
+    50: '#fffbeb',
+    500: '#f59e0b',
+    900: '#78350f',
   },
   danger: {
-    50: "#fef2f2",
-    500: "#ef4444",
-    900: "#7f1d1d",
+    50: '#fef2f2',
+    500: '#ef4444',
+    900: '#7f1d1d',
   },
 };
 ```
@@ -166,11 +166,11 @@ const colors = {
 
 ```typescript
 const typography = {
-  h1: "text-3xl font-bold",
-  h2: "text-2xl font-semibold",
-  h3: "text-xl font-medium",
-  body: "text-base font-normal",
-  caption: "text-sm font-normal",
+  h1: 'text-3xl font-bold',
+  h2: 'text-2xl font-semibold',
+  h3: 'text-xl font-medium',
+  body: 'text-base font-normal',
+  caption: 'text-sm font-normal',
 };
 ```
 
@@ -195,6 +195,12 @@ const typography = {
 - タスク作成完了
 - 要件定義完了
 - デザインシステム設計完了
+- shadcn/ui基本コンポーネント導入完了（Button, Input, Select, Badge, Avatar, Card, Navigation Menu, Sheet, Dialog, Toast）
+- レイアウトコンポーネント実装完了（Header, Sidebar, Footer, MainLayout, DashboardLayout）
+- 業務特化コンポーネント実装完了（UserCard, SaaSConnectionCard, StatusIndicator, SearchBar, EmptyState）
+- 共通型定義ファイル作成完了（src/types/index.ts）
+- テストページ作成完了（動作確認済み）
+- 進捗: 80%完了
 
 ## 完了条件
 

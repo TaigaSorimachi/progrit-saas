@@ -1,0 +1,145 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// NextAuth.js Models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  
+  // 拡張フィールド
+  employeeId    String?   @unique
+  department    String?
+  position      String?
+  hireDate      DateTime?
+  terminationDate DateTime?
+  manager       String?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // SaaS接続の関連
+  saasAccounts  SaaSAccount[]
+  
+  @@map("users")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
+// アプリケーション固有のモデル
+model SaaSAccount {
+  id           String        @id @default(cuid())
+  userId       String
+  provider     String
+  accountId    String
+  status       AccountStatus @default(ACTIVE)
+  permissions  Json?
+  metadata     Json?
+  
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  
+  @@unique([userId, provider, accountId])
+  @@map("saas_accounts")
+}
+
+model WorkflowRequest {
+  id          String         @id @default(cuid())
+  type        WorkflowType
+  requesterId String
+  targetUserId String
+  status      WorkflowStatus @default(PENDING)
+  data        Json
+  
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  
+  @@map("workflow_requests")
+}
+
+model AuditLog {
+  id        String      @id @default(cuid())
+  userId    String?
+  action    String
+  resource  String?
+  metadata  Json?
+  timestamp DateTime    @default(now())
+  
+  @@map("audit_logs")
+}
+
+// Enums
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum WorkflowType {
+  ONBOARDING
+  OFFBOARDING
+  ROLE_CHANGE
+  DEPARTMENT_CHANGE
+  PERMISSION_CHANGE
+}
+
+enum WorkflowStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+  CANCELLED
+} 
