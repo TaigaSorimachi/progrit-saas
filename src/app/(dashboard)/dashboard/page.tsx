@@ -1,434 +1,373 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { StatusIndicator } from '@/components/common/status-indicator';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
-  Plus,
   Users,
-  Zap,
-  Activity,
+  Link,
+  GitBranch,
+  AlertTriangle,
   TrendingUp,
-  TrendingDown,
+  Activity,
   CheckCircle,
-  AlertCircle,
   Clock,
-  BarChart3,
-  Settings,
-  Bell,
-  RefreshCw,
+  User,
 } from 'lucide-react';
-
-// 統計データの型定義
-interface DashboardStats {
-  activeUsers: { value: number; change: number; trend: 'up' | 'down' };
-  saasConnections: { value: number; change: number; trend: 'up' | 'down' };
-  pendingApprovals: { value: number; change: number; trend: 'up' | 'down' };
-  systemErrors: { value: number; change: number; trend: 'up' | 'down' };
-}
-
-// アクティビティログの型定義
-interface ActivityLog {
-  id: string;
-  type: 'success' | 'warning' | 'error' | 'info';
-  title: string;
-  description: string;
-  timestamp: string;
-  user?: string;
-}
-
-// SaaS健全性の型定義
-interface SaaSHealth {
-  id: string;
-  name: string;
-  status: 'healthy' | 'degraded' | 'down';
-  responseTime: number;
-  uptime: number;
-  lastCheck: string;
-}
-
-// サンプルデータ
-const dashboardStats: DashboardStats = {
-  activeUsers: { value: 127, change: 12, trend: 'up' },
-  saasConnections: { value: 8, change: 2, trend: 'up' },
-  pendingApprovals: { value: 3, change: -1, trend: 'down' },
-  systemErrors: { value: 0, change: 0, trend: 'down' },
-};
-
-const recentActivities: ActivityLog[] = [
-  {
-    id: '1',
-    type: 'success',
-    title: 'ユーザー追加',
-    description: '田中太郎さん がGoogle Workspaceに追加されました',
-    timestamp: '2分前',
-    user: '管理者',
-  },
-  {
-    id: '2',
-    type: 'success',
-    title: 'ワークフロー承認',
-    description: '山田花子さんのSlackアカウント作成が承認されました',
-    timestamp: '15分前',
-    user: '人事部',
-  },
-  {
-    id: '3',
-    type: 'error',
-    title: 'SaaS連携エラー',
-    description: 'GitHub APIの接続でエラーが発生しました',
-    timestamp: '1時間前',
-  },
-  {
-    id: '4',
-    type: 'info',
-    title: 'ユーザー権限変更',
-    description: '佐藤次郎さんの権限が管理者に変更されました',
-    timestamp: '2時間前',
-    user: 'システム管理者',
-  },
-];
-
-const saasHealthStatus: SaaSHealth[] = [
-  {
-    id: '1',
-    name: 'Google Workspace',
-    status: 'healthy',
-    responseTime: 120,
-    uptime: 99.9,
-    lastCheck: '1分前',
-  },
-  {
-    id: '2',
-    name: 'Microsoft 365',
-    status: 'healthy',
-    responseTime: 98,
-    uptime: 99.8,
-    lastCheck: '2分前',
-  },
-  {
-    id: '3',
-    name: 'Slack',
-    status: 'degraded',
-    responseTime: 450,
-    uptime: 98.5,
-    lastCheck: '3分前',
-  },
-  {
-    id: '4',
-    name: 'GitHub',
-    status: 'down',
-    responseTime: 0,
-    uptime: 95.2,
-    lastCheck: '1時間前',
-  },
-];
+import { useDashboardStats } from '@/hooks/useApi';
 
 export default function DashboardPage() {
-  const getStatIcon = (type: string) => {
-    switch (type) {
-      case 'users':
-        return <Users className="h-4 w-4" />;
-      case 'saas':
-        return <Zap className="h-4 w-4" />;
-      case 'approvals':
-        return <Clock className="h-4 w-4" />;
-      case 'errors':
-        return <AlertCircle className="h-4 w-4" />;
-      default:
-        return <Activity className="h-4 w-4" />;
-    }
-  };
+  const { data: stats, loading, error } = useDashboardStats();
 
-  const getActivityIcon = (type: ActivityLog['type']) => {
-    switch (type) {
-      case 'success':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'warning':
-        return <AlertCircle className="h-4 w-4 text-yellow-500" />;
-      case 'error':
-        return <AlertCircle className="h-4 w-4 text-red-500" />;
-      case 'info':
-        return <Clock className="h-4 w-4 text-blue-500" />;
-      default:
-        return <Activity className="h-4 w-4 text-gray-500" />;
-    }
-  };
+  if (loading) {
+    return (
+      <div className="space-y-6 p-8">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">ダッシュボード</h1>
+        </div>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-6">
+                <div className="mb-2 h-4 w-3/4 rounded bg-gray-200"></div>
+                <div className="h-8 w-1/2 rounded bg-gray-200"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
-  const getSaaSHealthColor = (status: SaaSHealth['status']) => {
-    switch (status) {
-      case 'healthy':
-        return 'text-green-600 bg-green-50 border-green-200';
-      case 'degraded':
-        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case 'down':
-        return 'text-red-600 bg-red-50 border-red-200';
-      default:
-        return 'text-gray-600 bg-gray-50 border-gray-200';
-    }
+  if (error) {
+    return (
+      <div className="p-8">
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-3xl font-bold">ダッシュボード</h1>
+        </div>
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="h-5 w-5" />
+              <span className="font-medium">
+                データの読み込みに失敗しました
+              </span>
+            </div>
+            <p className="mt-2 text-red-600">{error}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div className="p-8">
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-3xl font-bold">ダッシュボード</h1>
+        </div>
+        <Card>
+          <CardContent className="p-6">
+            <p className="text-gray-500">データが見つかりません</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // システムヘルスの表示用設定
+  const getHealthBadge = (health: any) => {
+    const colors = {
+      excellent: 'bg-green-100 text-green-800',
+      good: 'bg-blue-100 text-blue-800',
+      warning: 'bg-yellow-100 text-yellow-800',
+      critical: 'bg-red-100 text-red-800',
+    };
+
+    const labels = {
+      excellent: '優秀',
+      good: '良好',
+      warning: '注意',
+      critical: '危険',
+    };
+
+    return (
+      <Badge className={colors[health.status as keyof typeof colors]}>
+        {labels[health.status as keyof typeof labels]} ({health.score}%)
+      </Badge>
+    );
   };
 
   return (
-    <div className="space-y-6 p-6">
-      {/* ページヘッダー */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">ダッシュボード</h1>
-          <p className="text-gray-600">SaaS アカウント管理システムの概要</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm">
-            <RefreshCw className="mr-2 h-4 w-4" />
-            更新
-          </Button>
-          <Button size="sm">
-            <Plus className="mr-2 h-4 w-4" />
-            新規ユーザー
-          </Button>
+    <div className="space-y-6 p-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">ダッシュボード</h1>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-500">システムヘルス:</span>
+          {getHealthBadge(stats.systemHealth)}
         </div>
       </div>
 
-      {/* 統計カード */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="transition-shadow hover:shadow-md">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  アクティブユーザー
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {dashboardStats.activeUsers.value}
-                </p>
-              </div>
-              <div className="rounded-full bg-blue-100 p-3">
-                {getStatIcon('users')}
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-sm">
-              {dashboardStats.activeUsers.trend === 'up' ? (
-                <TrendingUp className="mr-1 h-4 w-4 text-green-500" />
-              ) : (
-                <TrendingDown className="mr-1 h-4 w-4 text-red-500" />
-              )}
-              <span
-                className={
-                  dashboardStats.activeUsers.trend === 'up'
-                    ? 'text-green-600'
-                    : 'text-red-600'
-                }
-              >
-                {dashboardStats.activeUsers.change > 0 ? '+' : ''}
-                {dashboardStats.activeUsers.change}
-              </span>
-              <span className="ml-1 text-gray-500">先月比</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="transition-shadow hover:shadow-md">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">SaaS連携数</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {dashboardStats.saasConnections.value}
-                </p>
-              </div>
-              <div className="rounded-full bg-purple-100 p-3">
-                {getStatIcon('saas')}
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-sm">
-              {dashboardStats.saasConnections.trend === 'up' ? (
-                <TrendingUp className="mr-1 h-4 w-4 text-green-500" />
-              ) : (
-                <TrendingDown className="mr-1 h-4 w-4 text-red-500" />
-              )}
-              <span
-                className={
-                  dashboardStats.saasConnections.trend === 'up'
-                    ? 'text-green-600'
-                    : 'text-red-600'
-                }
-              >
-                {dashboardStats.saasConnections.change > 0 ? '+' : ''}
-                {dashboardStats.saasConnections.change}
-              </span>
-              <span className="ml-1 text-gray-500">新規追加</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="transition-shadow hover:shadow-md">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">承認待ち</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {dashboardStats.pendingApprovals.value}
-                </p>
-              </div>
-              <div className="rounded-full bg-yellow-100 p-3">
-                {getStatIcon('approvals')}
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-sm">
-              {dashboardStats.pendingApprovals.trend === 'up' ? (
-                <TrendingUp className="mr-1 h-4 w-4 text-red-500" />
-              ) : (
-                <TrendingDown className="mr-1 h-4 w-4 text-green-500" />
-              )}
-              <span
-                className={
-                  dashboardStats.pendingApprovals.trend === 'up'
-                    ? 'text-red-600'
-                    : 'text-green-600'
-                }
-              >
-                {dashboardStats.pendingApprovals.change > 0 ? '+' : ''}
-                {dashboardStats.pendingApprovals.change}
-              </span>
-              <span className="ml-1 text-gray-500">前日比</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="transition-shadow hover:shadow-md">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  システムエラー
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {dashboardStats.systemErrors.value}
-                </p>
-              </div>
-              <div className="rounded-full bg-green-100 p-3">
-                {getStatIcon('errors')}
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-sm">
-              <CheckCircle className="mr-1 h-4 w-4 text-green-500" />
-              <span className="text-green-600">正常稼働中</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* メインコンテンツエリア */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* 最近のアクティビティ */}
+      {/* メイン統計カード */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-semibold">
-              最近のアクティビティ
+            <CardTitle className="text-sm font-medium">
+              アクティブユーザー
             </CardTitle>
-            <Button variant="outline" size="sm">
-              <Bell className="mr-2 h-4 w-4" />
-              全て表示
-            </Button>
+            <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {recentActivities.map(activity => (
-                <div key={activity.id} className="flex items-start space-x-3">
-                  <div className="mt-1">{getActivityIcon(activity.type)}</div>
-                  <div className="min-w-0 flex-1">
-                    <h4 className="truncate text-sm font-medium text-gray-900">
-                      {activity.title}
-                    </h4>
-                    <p className="mt-1 text-sm text-gray-500">
-                      {activity.description}
-                    </p>
-                    <div className="mt-1 flex items-center space-x-2 text-xs text-gray-400">
-                      <span>{activity.timestamp}</span>
-                      {activity.user && (
-                        <>
-                          <span>•</span>
-                          <span>{activity.user}</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <div className="text-2xl font-bold">{stats.activeUsers}</div>
+            <p className="text-xs text-muted-foreground">
+              総ユーザー数: {stats.totalUsers}
+            </p>
           </CardContent>
         </Card>
 
-        {/* SaaS健全性モニタリング */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-semibold">SaaS健全性</CardTitle>
-            <Button variant="outline" size="sm">
-              <Settings className="mr-2 h-4 w-4" />
-              設定
-            </Button>
+            <CardTitle className="text-sm font-medium">SaaS連携数</CardTitle>
+            <Link className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {saasHealthStatus.map(saas => (
-                <div
-                  key={saas.id}
-                  className="flex items-center justify-between rounded-lg border p-3"
-                >
-                  <div className="flex items-center space-x-3">
-                    <StatusIndicator status={saas.status} variant="compact" />
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-900">
-                        {saas.name}
-                      </h4>
-                      <p className="text-xs text-gray-500">
-                        最終チェック: {saas.lastCheck}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-medium text-gray-900">
-                      {saas.uptime}%
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {saas.responseTime}ms
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <div className="text-2xl font-bold">{stats.totalSaasAccounts}</div>
+            <p className="text-xs text-muted-foreground">
+              アクティブ: {stats.activeSaasAccounts}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">承認待ち</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.pendingWorkflows}</div>
+            <p className="text-xs text-muted-foreground">
+              総ワークフロー: {stats.totalWorkflows}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">エラー</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground">
+              今日のアクティビティ: {stats.todayLogs}
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* クイックアクション */}
+      {/* 最近のアクティビティ */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">
-            クイックアクション
-          </CardTitle>
+          <CardTitle className="text-lg">最近のアクティビティ</CardTitle>
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <Activity className="h-4 w-4" />
+            <span>全て表示</span>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Button variant="outline" className="h-auto flex-col space-y-2 p-4">
-              <Users className="h-6 w-6" />
-              <span className="text-sm">新規ユーザー追加</span>
-            </Button>
-            <Button variant="outline" className="h-auto flex-col space-y-2 p-4">
-              <Zap className="h-6 w-6" />
-              <span className="text-sm">SaaS連携追加</span>
-            </Button>
-            <Button variant="outline" className="h-auto flex-col space-y-2 p-4">
-              <BarChart3 className="h-6 w-6" />
-              <span className="text-sm">レポート生成</span>
-            </Button>
-            <Button variant="outline" className="h-auto flex-col space-y-2 p-4">
-              <Settings className="h-6 w-6" />
-              <span className="text-sm">システム設定</span>
-            </Button>
+          {stats.recentActivity && stats.recentActivity.length > 0 ? (
+            <div className="space-y-4">
+              {stats.recentActivity.map((activity: any) => (
+                <div key={activity.id} className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    {activity.status === 'success' && (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    )}
+                    {activity.status === 'warning' && (
+                      <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                    )}
+                    {activity.status === 'error' && (
+                      <AlertTriangle className="h-4 w-4 text-red-500" />
+                    )}
+                    {activity.status === 'info' && (
+                      <Clock className="h-4 w-4 text-blue-500" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{activity.type}</p>
+                    <p className="text-xs text-gray-500">
+                      {activity.description}
+                    </p>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {new Date(activity.timestamp).toLocaleString('ja-JP', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-8 text-center text-gray-500">
+              <Activity className="mx-auto mb-2 h-8 w-8" />
+              <p>最近のアクティビティがありません</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ステータス表示テスト */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">ステータス表示テスト</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded-full bg-green-500"></div>
+              <span className="text-sm">成功</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
+              <span className="text-sm">警告</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded-full bg-red-500"></div>
+              <span className="text-sm">エラー</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded-full bg-blue-500"></div>
+              <span className="text-sm">同期中</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded-full bg-gray-500"></div>
+              <span className="text-sm">終了済み</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-500" />
+              <span className="text-sm">準備完了</span>
+            </div>
           </div>
         </CardContent>
       </Card>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* 最近のユーザー */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <User className="h-5 w-5" />
+              最近のユーザー
+            </CardTitle>
+            <div className="cursor-pointer text-sm text-gray-500 hover:text-blue-600">
+              すべて表示
+            </div>
+          </CardHeader>
+          <CardContent>
+            {stats.recentUsers && stats.recentUsers.length > 0 ? (
+              <div className="space-y-4">
+                {stats.recentUsers.map((user: any) => (
+                  <div key={user.id} className="flex items-center gap-3">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="text-xs">
+                        {user.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium">{user.name}</p>
+                        <Badge
+                          variant={
+                            user.status === 'active' ? 'default' : 'secondary'
+                          }
+                          className="text-xs"
+                        >
+                          {user.status === 'active'
+                            ? 'アクティブ'
+                            : 'マネージャー'}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <span>{user.department}</span>
+                        <span>{user.position}</span>
+                      </div>
+                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <span>SaaS連携: {user.saasAccountCount}個</span>
+                        <span>最終ログイン: {user.lastLoginTime}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-8 text-center text-gray-500">
+                <User className="mx-auto mb-2 h-8 w-8" />
+                <p>最近のユーザーがありません</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* SaaS連携状況 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Link className="h-5 w-5" />
+              SaaS連携状況
+            </CardTitle>
+            <div className="cursor-pointer text-sm text-gray-500 hover:text-blue-600">
+              連携管理
+            </div>
+          </CardHeader>
+          <CardContent>
+            {stats.saasProviderStats && stats.saasProviderStats.length > 0 ? (
+              <div className="space-y-4">
+                {stats.saasProviderStats.map((provider: any) => (
+                  <div
+                    key={provider.provider}
+                    className="flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
+                        <span className="text-xs font-medium">
+                          {provider.provider.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">
+                          {provider.provider}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {provider.count}個のアカウント
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-bold">{provider.count}</div>
+                      <div className="h-2 w-16 overflow-hidden rounded-full bg-gray-200">
+                        <div
+                          className="h-full rounded-full bg-green-500"
+                          style={{
+                            width: `${Math.min(provider.count * 20, 100)}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-8 text-center text-gray-500">
+                <Link className="mx-auto mb-2 h-8 w-8" />
+                <p>SaaS連携がまだありません</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

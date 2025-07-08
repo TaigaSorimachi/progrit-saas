@@ -3,966 +3,477 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { StatusIndicator } from '@/components/common/status-indicator';
+import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/common/empty-state';
 import {
   Search,
+  Activity,
   Filter,
+  AlertTriangle,
+  Loader2,
+  Calendar,
+  User,
+  FileText,
   Download,
   Eye,
-  Calendar,
   Clock,
-  User,
-  Activity,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
-  Settings,
-  Shield,
-  FileText,
-  Database,
-  Zap,
-  Users,
-  UserPlus,
-  UserMinus,
-  UserCheck,
-  Mail,
-  Phone,
-  Globe,
-  Server,
-  Key,
-  Lock,
-  Unlock,
-  LogIn,
-  LogOut,
-  RefreshCw,
   BarChart3,
-  TrendingUp,
-  TrendingDown,
-  Info,
-  AlertTriangle,
-  History,
-  ArrowRight,
-  MoreHorizontal,
 } from 'lucide-react';
+import { useAuditLogs } from '@/hooks/useApi';
 
-// アクティビティログ型定義
-interface ActivityLog {
+interface AuditLog {
   id: string;
-  timestamp: string;
-  level: 'info' | 'warning' | 'error' | 'success';
-  category: 'user' | 'saas' | 'auth' | 'system' | 'security' | 'workflow';
+  userId: string;
   action: string;
-  description: string;
-  user: {
+  resource: string;
+  metadata: any;
+  timestamp: string;
+  user?: {
     id: string;
     name: string;
     email: string;
-    department: string;
   };
-  target?: {
-    type: 'user' | 'saas' | 'workflow' | 'system';
-    id: string;
-    name: string;
-  };
-  metadata: {
-    ip?: string;
-    userAgent?: string;
-    location?: string;
-    duration?: number;
-    beforeValue?: string;
-    afterValue?: string;
-    errorMessage?: string;
-  };
-  correlationId?: string;
 }
 
-// サンプルアクティビティログ
-const sampleActivityLogs: ActivityLog[] = [
-  {
-    id: '1',
-    timestamp: '2024-01-15T10:30:00Z',
-    level: 'success',
-    category: 'user',
-    action: 'user_created',
-    description: 'ユーザーアカウントが作成されました',
-    user: {
-      id: '1',
-      name: '人事部 佐藤',
-      email: 'sato@company.com',
-      department: '人事部',
-    },
-    target: {
-      type: 'user',
-      id: '2',
-      name: '田中太郎',
-    },
-    metadata: {
-      ip: '192.168.1.100',
-      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-      location: '東京, 日本',
-      duration: 1200,
-    },
-    correlationId: 'req-123456',
-  },
-  {
-    id: '2',
-    timestamp: '2024-01-15T10:25:00Z',
-    level: 'success',
-    category: 'saas',
-    action: 'saas_account_created',
-    description: 'Google WorkspaceアカウントとSCIM連携でユーザーを作成',
-    user: {
-      id: '1',
-      name: 'System',
-      email: 'system@company.com',
-      department: 'システム',
-    },
-    target: {
-      type: 'saas',
-      id: '1',
-      name: 'Google Workspace',
-    },
-    metadata: {
-      ip: '10.0.0.1',
-      duration: 3200,
-      beforeValue: 'user_count: 44',
-      afterValue: 'user_count: 45',
-    },
-    correlationId: 'req-123456',
-  },
-  {
-    id: '3',
-    timestamp: '2024-01-15T10:20:00Z',
-    level: 'warning',
-    category: 'auth',
-    action: 'failed_login',
-    description: '複数回のログイン試行が失敗しました',
-    user: {
-      id: '3',
-      name: '山田花子',
-      email: 'yamada@company.com',
-      department: '営業部',
-    },
-    metadata: {
-      ip: '203.0.113.45',
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-      location: '大阪, 日本',
-      errorMessage: 'Invalid credentials (3 attempts)',
-    },
-  },
-  {
-    id: '4',
-    timestamp: '2024-01-15T10:15:00Z',
-    level: 'error',
-    category: 'saas',
-    action: 'saas_sync_failed',
-    description: 'GitHub API連携でエラーが発生しました',
-    user: {
-      id: '1',
-      name: 'System',
-      email: 'system@company.com',
-      department: 'システム',
-    },
-    target: {
-      type: 'saas',
-      id: '4',
-      name: 'GitHub',
-    },
-    metadata: {
-      ip: '10.0.0.1',
-      duration: 5000,
-      errorMessage: 'API rate limit exceeded (5000 requests/hour)',
-    },
-  },
-  {
-    id: '5',
-    timestamp: '2024-01-15T10:10:00Z',
-    level: 'info',
-    category: 'workflow',
-    action: 'workflow_approved',
-    description: 'ワークフローが承認されました',
-    user: {
-      id: '5',
-      name: 'IT管理者 鈴木',
-      email: 'suzuki@company.com',
-      department: 'IT部',
-    },
-    target: {
-      type: 'workflow',
-      id: '2',
-      name: 'Salesforce アクセス権限追加',
-    },
-    metadata: {
-      ip: '192.168.1.150',
-      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-      location: '東京, 日本',
-      duration: 30000,
-    },
-    correlationId: 'wf-789012',
-  },
-  {
-    id: '6',
-    timestamp: '2024-01-15T10:05:00Z',
-    level: 'success',
-    category: 'security',
-    action: 'permission_changed',
-    description: 'ユーザー権限が変更されました',
-    user: {
-      id: '6',
-      name: 'セキュリティ管理者 田中',
-      email: 'tanaka.security@company.com',
-      department: 'セキュリティ部',
-    },
-    target: {
-      type: 'user',
-      id: '7',
-      name: '佐藤次郎',
-    },
-    metadata: {
-      ip: '192.168.1.200',
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-      location: '東京, 日本',
-      beforeValue: 'permissions: [user, developer]',
-      afterValue: 'permissions: [user, developer, admin]',
-    },
-  },
-  {
-    id: '7',
-    timestamp: '2024-01-15T09:58:00Z',
-    level: 'warning',
-    category: 'system',
-    action: 'high_cpu_usage',
-    description: 'サーバーのCPU使用率が高くなっています',
-    user: {
-      id: '1',
-      name: 'System Monitor',
-      email: 'monitor@company.com',
-      department: 'システム',
-    },
-    metadata: {
-      ip: '10.0.0.10',
-      beforeValue: 'cpu_usage: 45%',
-      afterValue: 'cpu_usage: 85%',
-    },
-  },
-  {
-    id: '8',
-    timestamp: '2024-01-15T09:55:00Z',
-    level: 'info',
-    category: 'user',
-    action: 'user_login',
-    description: 'ユーザーがログインしました',
-    user: {
-      id: '8',
-      name: '開発部 高橋',
-      email: 'takahashi@company.com',
-      department: '開発部',
-    },
-    metadata: {
-      ip: '192.168.1.75',
-      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-      location: '東京, 日本',
-    },
-  },
-];
-
-// フィルター状態
-interface LogFilters {
-  search: string;
-  level: string;
-  category: string;
-  dateFrom: string;
-  dateTo: string;
-  user: string;
-}
-
-export default function ActivityReportsPage() {
-  const [filters, setFilters] = useState<LogFilters>({
-    search: '',
-    level: '',
-    category: '',
-    dateFrom: '',
-    dateTo: '',
-    user: '',
-  });
-  const [selectedLog, setSelectedLog] = useState<ActivityLog | null>(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list');
-
-  // フィルタリングされたログ一覧
-  const filteredLogs = sampleActivityLogs.filter(log => {
-    const matchesSearch =
-      log.description.toLowerCase().includes(filters.search.toLowerCase()) ||
-      log.action.toLowerCase().includes(filters.search.toLowerCase()) ||
-      log.user.name.toLowerCase().includes(filters.search.toLowerCase());
-    const matchesLevel =
-      !filters.level || filters.level === 'all' || log.level === filters.level;
-    const matchesCategory =
-      !filters.category ||
-      filters.category === 'all' ||
-      log.category === filters.category;
-    const matchesUser =
-      !filters.user ||
-      log.user.name.toLowerCase().includes(filters.user.toLowerCase());
-
-    // 日付フィルタ
-    const logDate = new Date(log.timestamp);
-    const matchesDateFrom =
-      !filters.dateFrom || logDate >= new Date(filters.dateFrom);
-    const matchesDateTo =
-      !filters.dateTo || logDate <= new Date(filters.dateTo);
-
-    return (
-      matchesSearch &&
-      matchesLevel &&
-      matchesCategory &&
-      matchesUser &&
-      matchesDateFrom &&
-      matchesDateTo
-    );
+export default function ActivityReportPage() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedAction, setSelectedAction] = useState<string>('all');
+  const [selectedUser, setSelectedUser] = useState<string>('all');
+  const [dateRange, setDateRange] = useState({
+    startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split('T')[0], // 7日前
+    endDate: new Date().toISOString().split('T')[0], // 今日
   });
 
-  // ユニークな値
-  const uniqueLevels = [...new Set(sampleActivityLogs.map(log => log.level))];
-  const uniqueCategories = [
-    ...new Set(sampleActivityLogs.map(log => log.category)),
+  const {
+    data: logs,
+    loading,
+    error,
+    refetch,
+  } = useAuditLogs({
+    action: selectedAction !== 'all' ? selectedAction : undefined,
+    userId: selectedUser !== 'all' ? selectedUser : undefined,
+    startDate: dateRange.startDate,
+    endDate: dateRange.endDate,
+    limit: 100,
+  });
+
+  // フィルタリング
+  const filteredLogs =
+    logs?.filter((log: AuditLog) => {
+      const matchesSearch =
+        log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        log.resource.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        log.user?.name.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesSearch;
+    }) || [];
+
+  // 統計データ
+  const totalLogs = logs?.length || 0;
+  const uniqueUsers = [
+    ...new Set(logs?.map((log: AuditLog) => log.userId) || []),
+  ].length;
+  const actions = [...new Set(logs?.map((log: AuditLog) => log.action) || [])];
+  const users = [
+    ...new Set(
+      logs?.map((log: AuditLog) => log.user?.name).filter(Boolean) || []
+    ),
   ];
 
-  const handleLogAction = (log: ActivityLog, action: string) => {
-    setSelectedLog(log);
-    switch (action) {
-      case 'view':
-        setIsDetailsOpen(true);
-        break;
-      case 'export':
-        console.log('エクスポート:', log);
-        break;
-      default:
-        console.log(`${action}:`, log);
-    }
-  };
+  // アクション別統計
+  const actionStats = actions.reduce(
+    (acc, action) => {
+      acc[action] =
+        logs?.filter((log: AuditLog) => log.action === action).length || 0;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
-  const getLevelBadge = (level: string) => {
-    switch (level) {
-      case 'success':
-        return (
-          <Badge variant="default" className="bg-green-100 text-green-800">
-            成功
-          </Badge>
-        );
-      case 'info':
-        return (
-          <Badge variant="outline" className="bg-blue-100 text-blue-800">
-            情報
-          </Badge>
-        );
-      case 'warning':
-        return (
-          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-            警告
-          </Badge>
-        );
-      case 'error':
-        return (
-          <Badge variant="destructive" className="bg-red-100 text-red-800">
-            エラー
-          </Badge>
-        );
-      default:
-        return <Badge variant="outline">{level}</Badge>;
-    }
-  };
+  const getActionBadge = (action: string) => {
+    const configs = {
+      USER_CREATED: { variant: 'default', color: 'text-green-600' },
+      USER_UPDATED: { variant: 'secondary', color: 'text-blue-600' },
+      USER_DELETED: { variant: 'destructive', color: 'text-red-600' },
+      SAAS_ACCOUNT_CREATED: { variant: 'default', color: 'text-green-600' },
+      SAAS_ACCOUNT_DELETED: { variant: 'destructive', color: 'text-red-600' },
+      WORKFLOW_CREATED: { variant: 'secondary', color: 'text-purple-600' },
+      LOGIN: { variant: 'outline', color: 'text-gray-600' },
+      LOGOUT: { variant: 'outline', color: 'text-gray-600' },
+    };
 
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'user':
-        return <Users className="h-4 w-4" />;
-      case 'saas':
-        return <Zap className="h-4 w-4" />;
-      case 'auth':
-        return <Lock className="h-4 w-4" />;
-      case 'system':
-        return <Server className="h-4 w-4" />;
-      case 'security':
-        return <Shield className="h-4 w-4" />;
-      case 'workflow':
-        return <FileText className="h-4 w-4" />;
-      default:
-        return <Activity className="h-4 w-4" />;
-    }
-  };
+    const config = configs[action as keyof typeof configs] || {
+      variant: 'outline',
+      color: 'text-gray-600',
+    };
 
-  const getLevelIcon = (level: string) => {
-    switch (level) {
-      case 'success':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'info':
-        return <Info className="h-4 w-4 text-blue-500" />;
-      case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
-      case 'error':
-        return <XCircle className="h-4 w-4 text-red-500" />;
-      default:
-        return <Activity className="h-4 w-4 text-gray-500" />;
-    }
-  };
-
-  const getCategoryLabel = (category: string) => {
-    switch (category) {
-      case 'user':
-        return 'ユーザー';
-      case 'saas':
-        return 'SaaS';
-      case 'auth':
-        return '認証';
-      case 'system':
-        return 'システム';
-      case 'security':
-        return 'セキュリティ';
-      case 'workflow':
-        return 'ワークフロー';
-      default:
-        return category;
-    }
+    return (
+      <Badge variant={config.variant as any} className={config.color}>
+        {action}
+      </Badge>
+    );
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('ja-JP');
+    return new Date(dateString).toLocaleDateString('ja-JP', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
   };
 
-  const formatDuration = (ms: number) => {
-    if (ms < 1000) return `${ms}ms`;
-    if (ms < 60000) return `${Math.round(ms / 1000)}s`;
-    return `${Math.round(ms / 60000)}m`;
+  const handleExport = () => {
+    if (!logs || logs.length === 0) {
+      alert('エクスポートするデータがありません');
+      return;
+    }
+
+    const csvContent = [
+      ['日時', 'ユーザー', 'アクション', 'リソース', 'メタデータ'].join(','),
+      ...logs.map((log: AuditLog) =>
+        [
+          log.timestamp,
+          log.user?.name || 'システム',
+          log.action,
+          log.resource,
+          JSON.stringify(log.metadata || {}),
+        ].join(',')
+      ),
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute(
+      'download',
+      `activity-log-${new Date().toISOString().split('T')[0]}.csv`
+    );
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
-  const exportLogs = () => {
-    console.log('ログエクスポート:', filteredLogs);
-  };
+  if (loading) {
+    return (
+      <div className="space-y-6 p-8">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">アクティビティレポート</h1>
+        </div>
+        <div className="grid grid-cols-1 gap-4">
+          {[...Array(10)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-6">
+                <div className="mb-2 h-4 w-3/4 rounded bg-gray-200"></div>
+                <div className="mb-4 h-4 w-1/2 rounded bg-gray-200"></div>
+                <div className="h-8 w-1/4 rounded bg-gray-200"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8">
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-3xl font-bold">アクティビティレポート</h1>
+        </div>
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="h-5 w-5" />
+              <span className="font-medium">
+                アクティビティログの読み込みに失敗しました
+              </span>
+            </div>
+            <p className="mt-2 text-red-600">{error}</p>
+            <Button onClick={refetch} className="mt-4" variant="outline">
+              再試行
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-8">
       {/* ページヘッダー */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            アクティビティレポート
-          </h1>
+          <h1 className="text-3xl font-bold">アクティビティレポート</h1>
           <p className="text-gray-600">
-            システム活動ログと監査証跡を確認します ({filteredLogs.length}/
-            {sampleActivityLogs.length}件)
+            {totalLogs} 件のアクティビティログ（{dateRange.startDate} ～{' '}
+            {dateRange.endDate}）
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={exportLogs}>
-            <Download className="mr-2 h-4 w-4" />
-            ログエクスポート
-          </Button>
-          <Button variant="outline" size="sm">
-            <BarChart3 className="mr-2 h-4 w-4" />
-            統計表示
-          </Button>
-          <Button variant="outline" size="sm">
-            <RefreshCw className="mr-2 h-4 w-4" />
-            更新
-          </Button>
-        </div>
+        <Button onClick={handleExport} variant="outline">
+          <Download className="mr-2 h-4 w-4" />
+          CSVエクスポート
+        </Button>
       </div>
 
       {/* 統計カード */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">成功</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {
-                    sampleActivityLogs.filter(log => log.level === 'success')
-                      .length
-                  }
-                </p>
-              </div>
-              <CheckCircle className="h-8 w-8 text-green-500" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              総アクティビティ数
+            </CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalLogs}</div>
+            <p className="text-xs text-muted-foreground">
+              選択期間内の全アクティビティ
+            </p>
           </CardContent>
         </Card>
+
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">警告</p>
-                <p className="text-2xl font-bold text-yellow-600">
-                  {
-                    sampleActivityLogs.filter(log => log.level === 'warning')
-                      .length
-                  }
-                </p>
-              </div>
-              <AlertTriangle className="h-8 w-8 text-yellow-500" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              アクティブユーザー数
+            </CardTitle>
+            <User className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{uniqueUsers}</div>
+            <p className="text-xs text-muted-foreground">
+              アクションを実行したユーザー
+            </p>
           </CardContent>
         </Card>
+
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">エラー</p>
-                <p className="text-2xl font-bold text-red-600">
-                  {
-                    sampleActivityLogs.filter(log => log.level === 'error')
-                      .length
-                  }
-                </p>
-              </div>
-              <XCircle className="h-8 w-8 text-red-500" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              アクション種別数
+            </CardTitle>
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{actions.length}</div>
+            <p className="text-xs text-muted-foreground">
+              実行されたアクションの種類
+            </p>
           </CardContent>
         </Card>
+
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">総ログ数</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {sampleActivityLogs.length}
-                </p>
-              </div>
-              <Activity className="h-8 w-8 text-blue-500" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              平均日次アクティビティ
+            </CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {Math.round(
+                totalLogs /
+                  Math.max(
+                    1,
+                    Math.ceil(
+                      (new Date(dateRange.endDate).getTime() -
+                        new Date(dateRange.startDate).getTime()) /
+                        (1000 * 60 * 60 * 24)
+                    )
+                  )
+              )}
             </div>
+            <p className="text-xs text-muted-foreground">
+              1日あたりのアクティビティ数
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* 検索・フィルター */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="space-y-4">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
-                  <Input
-                    placeholder="アクション、説明、ユーザー名で検索..."
-                    value={filters.search}
-                    onChange={e =>
-                      setFilters(prev => ({ ...prev, search: e.target.value }))
-                    }
-                    className="pl-9"
-                  />
+      {/* アクション別統計 */}
+      {Object.keys(actionStats).length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">アクション別統計</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              {Object.entries(actionStats).map(([action, count]) => (
+                <div
+                  key={action}
+                  className="flex items-center justify-between rounded-md bg-gray-50 p-3"
+                >
+                  <div>
+                    <p className="text-sm font-medium">{action}</p>
+                    <p className="text-2xl font-bold">{count}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-gray-500">
+                      {((count / totalLogs) * 100).toFixed(1)}%
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Select
-                  value={filters.level}
-                  onValueChange={value =>
-                    setFilters(prev => ({ ...prev, level: value }))
-                  }
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue placeholder="レベル" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">全て</SelectItem>
-                    {uniqueLevels.map(level => (
-                      <SelectItem key={level} value={level}>
-                        {level === 'success'
-                          ? '成功'
-                          : level === 'info'
-                            ? '情報'
-                            : level === 'warning'
-                              ? '警告'
-                              : 'エラー'}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={filters.category}
-                  onValueChange={value =>
-                    setFilters(prev => ({ ...prev, category: value }))
-                  }
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue placeholder="カテゴリ" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">全て</SelectItem>
-                    {uniqueCategories.map(category => (
-                      <SelectItem key={category} value={category}>
-                        {getCategoryLabel(category)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setFilters({
-                      search: '',
-                      level: 'all',
-                      category: 'all',
-                      dateFrom: '',
-                      dateTo: '',
-                      user: '',
-                    })
-                  }
-                >
-                  クリア
-                </Button>
-              </div>
+              ))}
             </div>
+          </CardContent>
+        </Card>
+      )}
 
-            <div className="flex flex-wrap gap-4">
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-700">
-                  開始日
-                </label>
-                <Input
-                  type="date"
-                  value={filters.dateFrom}
-                  onChange={e =>
-                    setFilters(prev => ({ ...prev, dateFrom: e.target.value }))
-                  }
-                  className="w-40"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-700">
-                  終了日
-                </label>
-                <Input
-                  type="date"
-                  value={filters.dateTo}
-                  onChange={e =>
-                    setFilters(prev => ({ ...prev, dateTo: e.target.value }))
-                  }
-                  className="w-40"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-700">
-                  ユーザー
-                </label>
-                <Input
-                  placeholder="ユーザー名"
-                  value={filters.user}
-                  onChange={e =>
-                    setFilters(prev => ({ ...prev, user: e.target.value }))
-                  }
-                  className="w-40"
-                />
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* 検索・フィルター */}
+      <div className="flex flex-col gap-4 sm:flex-row">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+          <Input
+            placeholder="アクション、リソース、ユーザー名で検索..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <div className="flex gap-2">
+          <select
+            value={selectedAction}
+            onChange={e => setSelectedAction(e.target.value)}
+            className="rounded-md border px-3 py-2 text-sm"
+          >
+            <option value="all">全てのアクション</option>
+            {actions.map(action => (
+              <option key={action} value={action}>
+                {action}
+              </option>
+            ))}
+          </select>
+          <select
+            value={selectedUser}
+            onChange={e => setSelectedUser(e.target.value)}
+            className="rounded-md border px-3 py-2 text-sm"
+          >
+            <option value="all">全てのユーザー</option>
+            {users.map(user => (
+              <option key={user} value={user}>
+                {user}
+              </option>
+            ))}
+          </select>
+          <input
+            type="date"
+            value={dateRange.startDate}
+            onChange={e =>
+              setDateRange(prev => ({ ...prev, startDate: e.target.value }))
+            }
+            className="rounded-md border px-3 py-2 text-sm"
+          />
+          <input
+            type="date"
+            value={dateRange.endDate}
+            onChange={e =>
+              setDateRange(prev => ({ ...prev, endDate: e.target.value }))
+            }
+            className="rounded-md border px-3 py-2 text-sm"
+          />
+          <Button variant="outline" size="sm">
+            <Filter className="mr-2 h-4 w-4" />
+            フィルター
+          </Button>
+        </div>
+      </div>
 
-      {/* ログ一覧 */}
+      {/* アクティビティログ一覧 */}
       {filteredLogs.length === 0 ? (
         <EmptyState
-          type="no-logs"
-          title="ログが見つかりません"
-          description="検索条件に一致するログがありません。フィルターを変更してください。"
+          icon={Activity}
+          title="アクティビティログが見つかりません"
+          description={
+            totalLogs === 0
+              ? '選択した期間にアクティビティログがありません。期間を変更してください。'
+              : '検索条件に一致するアクティビティログが見つかりません。'
+          }
         />
       ) : (
-        <div className="space-y-4">
-          {filteredLogs.map(log => (
-            <Card
-              key={log.id}
-              className="overflow-hidden transition-shadow hover:shadow-md"
-            >
+        <div className="space-y-3">
+          {filteredLogs.map((log: AuditLog) => (
+            <Card key={log.id} className="transition-shadow hover:shadow-md">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100">
-                      {getCategoryIcon(log.category)}
+                  <div className="flex-1">
+                    <div className="mb-2 flex items-center gap-3">
+                      <Activity className="h-4 w-4 text-blue-600" />
+                      {getActionBadge(log.action)}
+                      <span className="text-sm text-gray-500">
+                        {formatDate(log.timestamp)}
+                      </span>
                     </div>
-                    <div className="min-w-0 flex-1">
+
+                    <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-gray-900">
-                          {log.action}
-                        </h3>
-                        {getLevelBadge(log.level)}
-                        <Badge variant="outline" className="text-xs">
-                          {getCategoryLabel(log.category)}
-                        </Badge>
+                        <User className="h-4 w-4 text-gray-400" />
+                        <div>
+                          <span className="text-gray-600">ユーザー:</span>
+                          <p className="font-medium">
+                            {log.user?.name || 'システム'}
+                          </p>
+                          {log.user?.email && (
+                            <p className="text-xs text-gray-500">
+                              {log.user.email}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <p className="mt-1 text-sm text-gray-600">
-                        {log.description}
-                      </p>
-                      <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <User className="h-3 w-3" />
-                          <span>{log.user.name}</span>
+
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-gray-400" />
+                        <div>
+                          <span className="text-gray-600">リソース:</span>
+                          <p className="font-mono text-xs font-medium">
+                            {log.resource}
+                          </p>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          <span>{formatDate(log.timestamp)}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-gray-400" />
+                        <div>
+                          <span className="text-gray-600">タイムスタンプ:</span>
+                          <p className="text-xs font-medium">
+                            {formatDate(log.timestamp)}
+                          </p>
                         </div>
-                        {log.metadata.ip && (
-                          <div className="flex items-center gap-1">
-                            <Globe className="h-3 w-3" />
-                            <span>{log.metadata.ip}</span>
-                          </div>
-                        )}
-                        {log.metadata.location && (
-                          <div className="flex items-center gap-1">
-                            <span>{log.metadata.location}</span>
-                          </div>
-                        )}
-                        {log.metadata.duration && (
-                          <div className="flex items-center gap-1">
-                            <span>
-                              実行時間: {formatDuration(log.metadata.duration)}
-                            </span>
-                          </div>
-                        )}
                       </div>
                     </div>
+
+                    {log.metadata && Object.keys(log.metadata).length > 0 && (
+                      <div className="mt-3 rounded-md bg-gray-50 p-3">
+                        <div className="mb-2 flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-gray-400" />
+                          <span className="text-sm font-medium text-gray-600">
+                            メタデータ:
+                          </span>
+                        </div>
+                        <pre className="overflow-x-auto text-xs text-gray-600">
+                          {JSON.stringify(log.metadata, null, 2)}
+                        </pre>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center space-x-2">
-                    {getLevelIcon(log.level)}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleLogAction(log, 'view')}
-                    >
+
+                  <div className="ml-4 flex gap-2">
+                    <Button size="sm" variant="ghost">
                       <Eye className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
-
-                {/* 対象がある場合 */}
-                {log.target && (
-                  <div className="mt-3 rounded-lg bg-gray-50 p-3">
-                    <div className="flex items-center gap-2">
-                      <ArrowRight className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm font-medium text-gray-700">
-                        対象: {log.target.name} ({log.target.type})
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {/* 変更詳細 */}
-                {(log.metadata.beforeValue || log.metadata.afterValue) && (
-                  <div className="mt-3 rounded-lg bg-gray-50 p-3">
-                    <div className="space-y-1">
-                      {log.metadata.beforeValue && (
-                        <div className="text-sm">
-                          <span className="font-medium text-gray-700">
-                            変更前:
-                          </span>
-                          <span className="ml-2 text-gray-600">
-                            {log.metadata.beforeValue}
-                          </span>
-                        </div>
-                      )}
-                      {log.metadata.afterValue && (
-                        <div className="text-sm">
-                          <span className="font-medium text-gray-700">
-                            変更後:
-                          </span>
-                          <span className="ml-2 text-gray-600">
-                            {log.metadata.afterValue}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* エラーメッセージ */}
-                {log.metadata.errorMessage && (
-                  <div className="mt-3 rounded-lg bg-red-50 p-3">
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className="h-4 w-4 text-red-500" />
-                      <span className="text-sm font-medium text-red-700">
-                        エラー詳細:
-                      </span>
-                    </div>
-                    <p className="mt-1 text-sm text-red-600">
-                      {log.metadata.errorMessage}
-                    </p>
-                  </div>
-                )}
-
-                {/* 関連ID */}
-                {log.correlationId && (
-                  <div className="mt-3 flex items-center gap-2">
-                    <span className="text-xs text-gray-500">関連ID:</span>
-                    <Badge variant="outline" className="text-xs">
-                      {log.correlationId}
-                    </Badge>
-                  </div>
-                )}
               </CardContent>
             </Card>
           ))}
         </div>
       )}
-
-      {/* 詳細ダイアログ */}
-      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>ログ詳細</DialogTitle>
-          </DialogHeader>
-          {selectedLog && (
-            <div className="space-y-6">
-              {/* 基本情報 */}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">基本情報</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">アクション</span>
-                      <span className="font-medium">{selectedLog.action}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">レベル</span>
-                      {getLevelBadge(selectedLog.level)}
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">カテゴリ</span>
-                      <span className="font-medium">
-                        {getCategoryLabel(selectedLog.category)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">タイムスタンプ</span>
-                      <span className="font-medium">
-                        {formatDate(selectedLog.timestamp)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">ログID</span>
-                      <span className="font-medium">{selectedLog.id}</span>
-                    </div>
-                    {selectedLog.correlationId && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">関連ID</span>
-                        <span className="font-medium">
-                          {selectedLog.correlationId}
-                        </span>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">ユーザー情報</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">名前</span>
-                      <span className="font-medium">
-                        {selectedLog.user.name}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">メール</span>
-                      <span className="font-medium">
-                        {selectedLog.user.email}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">部署</span>
-                      <span className="font-medium">
-                        {selectedLog.user.department}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">ユーザーID</span>
-                      <span className="font-medium">{selectedLog.user.id}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* 対象情報 */}
-              {selectedLog.target && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">対象情報</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">対象名</span>
-                      <span className="font-medium">
-                        {selectedLog.target.name}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">対象タイプ</span>
-                      <span className="font-medium">
-                        {selectedLog.target.type}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">対象ID</span>
-                      <span className="font-medium">
-                        {selectedLog.target.id}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* メタデータ */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">メタデータ</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {Object.entries(selectedLog.metadata).map(
-                      ([key, value]) =>
-                        value && (
-                          <div key={key} className="flex justify-between">
-                            <span className="text-gray-600">{key}</span>
-                            <span className="font-medium">{String(value)}</span>
-                          </div>
-                        )
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* 説明 */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">説明</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700">{selectedLog.description}</p>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

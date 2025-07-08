@@ -1,3 +1,5 @@
+'use client';
+
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserCard } from '@/components/common/user-card';
@@ -6,144 +8,167 @@ import { StatusIndicator } from '@/components/common/status-indicator';
 import { SearchBar } from '@/components/common/search-bar';
 import { EmptyState } from '@/components/common/empty-state';
 import { Button } from '@/components/ui/button';
-import { Plus, Users, Zap, BarChart3 } from 'lucide-react';
+import {
+  Plus,
+  Users,
+  Zap,
+  BarChart3,
+  AlertTriangle,
+  Loader2,
+} from 'lucide-react';
+import { useUsers, useSaasConnections } from '@/hooks/useApi';
 import type { User, SaaSConnection } from '@/types';
 
-// サンプルデータ
-const sampleUsers: User[] = [
-  {
-    id: '1',
-    employeeId: 'EMP001',
-    name: '田中太郎',
-    email: 'tanaka@example.com',
-    department: 'エンジニアリング',
-    position: 'シニアエンジニア',
-    role: 'user',
-    status: 'active',
-    hireDate: '2023-04-01',
-    lastActive: '2時間前',
-    saasConnections: 5,
-    createdAt: '2023-04-01T00:00:00Z',
-    updatedAt: '2024-12-19T00:00:00Z',
-  },
-  {
-    id: '2',
-    employeeId: 'EMP002',
-    name: '山田花子',
-    email: 'yamada@example.com',
-    department: 'マーケティング',
-    position: 'マネージャー',
-    role: 'manager',
-    status: 'active',
-    hireDate: '2022-08-15',
-    lastActive: '30分前',
-    saasConnections: 8,
-    createdAt: '2022-08-15T00:00:00Z',
-    updatedAt: '2024-12-19T00:00:00Z',
-  },
-];
-
-const sampleSaaSConnections: SaaSConnection[] = [
-  {
-    id: '1',
-    name: 'Google Workspace',
-    type: 'google',
-    provider: 'google',
-    status: 'connected',
-    lastSyncAt: '2024-01-15T10:30:00Z',
-    syncStatus: 'success',
-    userCount: 127,
-    totalUsers: 150,
-    errorCount: 0,
-    licenseCount: 150,
-    usagePercentage: 85,
-    monthlyActive: 119,
-    apiHealth: 'healthy',
-    features: ['Email', 'Drive', 'Calendar', 'Meet'],
-    setupDate: '2023-01-15',
-    config: {
-      domain: 'company.com',
-      adminEmail: 'admin@company.com',
-    },
-    healthStatus: {
-      status: 'healthy',
-      responseTime: 120,
-      uptime: 99.9,
-      lastCheck: '2024-01-15T10:25:00Z',
-    },
-    usage: {
-      requestCount: 1250,
-      errorRate: 0.1,
-      avgResponseTime: 145,
-    },
-  },
-  {
-    id: '2',
-    name: 'Microsoft 365',
-    type: 'microsoft',
-    provider: 'microsoft',
-    status: 'connected',
-    lastSyncAt: '2024-01-15T09:45:00Z',
-    syncStatus: 'success',
-    userCount: 95,
-    totalUsers: 100,
-    errorCount: 0,
-    licenseCount: 100,
-    usagePercentage: 95,
-    monthlyActive: 87,
-    apiHealth: 'healthy',
-    features: ['Outlook', 'OneDrive', 'Teams', 'SharePoint'],
-    setupDate: '2023-02-20',
-    config: {
-      tenantId: 'tenant-id-123',
-    },
-    healthStatus: {
-      status: 'healthy',
-      responseTime: 98,
-      uptime: 99.8,
-      lastCheck: '2024-01-15T10:20:00Z',
-    },
-    usage: {
-      requestCount: 980,
-      errorRate: 0.05,
-      avgResponseTime: 110,
-    },
-  },
-  {
-    id: '3',
-    name: 'Slack',
-    type: 'slack',
-    provider: 'slack',
-    status: 'error',
-    lastSyncAt: '2024-01-14T18:30:00Z',
-    syncStatus: 'error',
-    userCount: 78,
-    totalUsers: 100,
-    errorCount: 3,
-    licenseCount: 100,
-    usagePercentage: 78,
-    monthlyActive: 65,
-    apiHealth: 'degraded',
-    features: ['Messaging', 'Channels', 'Apps'],
-    setupDate: '2023-03-10',
-    config: {
-      workspaceId: 'T1234567890',
-    },
-    healthStatus: {
-      status: 'degraded',
-      responseTime: 450,
-      uptime: 98.5,
-      lastCheck: '2024-01-15T10:15:00Z',
-    },
-    usage: {
-      requestCount: 2100,
-      errorRate: 2.1,
-      avgResponseTime: 380,
-    },
-  },
-];
-
 export default function Home() {
+  const { data: users, loading: usersLoading, error: usersError } = useUsers();
+  const {
+    data: saasConnections,
+    loading: saasLoading,
+    error: saasError,
+  } = useSaasConnections();
+
+  // 最新の5名のユーザーを取得
+  const recentUsers = users?.slice(0, 5) || [];
+
+  // SaaS連携を形式変換（データベースの形式からUIの形式へ）
+  const formattedSaasConnections =
+    saasConnections?.map(account => ({
+      id: account.id,
+      name: getProviderName(account.provider),
+      type: account.provider,
+      provider: account.provider,
+      status: account.status === 'ACTIVE' ? 'connected' : 'error',
+      lastSyncAt: account.updatedAt,
+      syncStatus: account.status === 'ACTIVE' ? 'success' : 'error',
+      userCount: 0, // 実際のカウントは別途計算が必要
+      totalUsers: 0,
+      errorCount: 0,
+      licenseCount: 0,
+      usagePercentage: 0,
+      monthlyActive: 0,
+      apiHealth: account.status === 'ACTIVE' ? 'healthy' : 'degraded',
+      features: getProviderFeatures(account.provider),
+      setupDate: account.createdAt,
+      config: account.metadata || {},
+      healthStatus: {
+        status: account.status === 'ACTIVE' ? 'healthy' : 'degraded',
+        responseTime: null, // 実際のAPI監視データは別途実装
+        uptime: null, // 実際のアップタイムデータは別途実装
+        lastCheck: account.updatedAt,
+      },
+      usage: {
+        requestCount: null, // 実際のAPI使用量データは別途実装
+        errorRate: null, // 実際のエラー率データは別途実装
+        avgResponseTime: null, // 実際のレスポンス時間データは別途実装
+      },
+    })) || [];
+
+  // プロバイダー名の取得
+  function getProviderName(provider: string): string {
+    const names: { [key: string]: string } = {
+      google: 'Google Workspace',
+      google_workspace: 'Google Workspace',
+      microsoft: 'Microsoft 365',
+      microsoft_365: 'Microsoft 365',
+      slack: 'Slack',
+      github: 'GitHub',
+      zoom: 'Zoom',
+      aws_iam: 'AWS IAM',
+      gitlab: 'GitLab',
+      salesforce: 'Salesforce',
+    };
+    return names[provider] || provider;
+  }
+
+  // プロバイダーの機能取得
+  function getProviderFeatures(provider: string): string[] {
+    const features: { [key: string]: string[] } = {
+      google: ['Email', 'Drive', 'Calendar', 'Meet'],
+      google_workspace: ['Email', 'Drive', 'Calendar', 'Meet'],
+      microsoft: ['Outlook', 'OneDrive', 'Teams', 'SharePoint'],
+      microsoft_365: ['Outlook', 'OneDrive', 'Teams', 'SharePoint'],
+      slack: ['Messaging', 'Channels', 'Apps'],
+      github: ['Repositories', 'Issues', 'Actions'],
+      zoom: ['Meetings', 'Webinars', 'Phone'],
+      aws_iam: ['Access Management', 'Policies', 'Roles'],
+      gitlab: ['Git', 'CI/CD', 'Issues'],
+      salesforce: ['CRM', 'Sales', 'Marketing'],
+    };
+    return features[provider] || [];
+  }
+
+  const loading = usersLoading || saasLoading;
+  const error = usersError || saasError;
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                SaaS アカウント管理システム
+              </h1>
+              <p className="mt-1 text-gray-600">
+                企業のSaaSアカウントを一元管理・自動化
+              </p>
+            </div>
+            <Button disabled>
+              <Plus className="mr-2 h-4 w-4" />
+              新規ユーザー
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <CardContent className="p-6">
+                  <div className="mb-2 h-4 w-3/4 rounded bg-gray-200"></div>
+                  <div className="h-16 w-full rounded bg-gray-200"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                SaaS アカウント管理システム
+              </h1>
+              <p className="mt-1 text-gray-600">
+                企業のSaaSアカウントを一元管理・自動化
+              </p>
+            </div>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              新規ユーザー
+            </Button>
+          </div>
+
+          <Card className="border-red-200 bg-red-50">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 text-red-600">
+                <AlertTriangle className="h-5 w-5" />
+                <span className="font-medium">
+                  データの読み込みに失敗しました
+                </span>
+              </div>
+              <p className="mt-2 text-red-600">{error}</p>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -197,9 +222,15 @@ export default function Home() {
             </Button>
           </div>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {sampleUsers.map(user => (
-              <UserCard key={user.id} user={user} />
-            ))}
+            {recentUsers.length > 0 ? (
+              recentUsers.map((user: User) => (
+                <UserCard key={user.id} user={user} />
+              ))
+            ) : (
+              <div className="col-span-2">
+                <EmptyState type="no-users" />
+              </div>
+            )}
           </div>
         </div>
 
@@ -215,9 +246,18 @@ export default function Home() {
             </Button>
           </div>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
-            {sampleSaaSConnections.map(connection => (
-              <SaaSConnectionCard key={connection.id} connection={connection} />
-            ))}
+            {formattedSaasConnections.length > 0 ? (
+              formattedSaasConnections.map((connection: SaaSConnection) => (
+                <SaaSConnectionCard
+                  key={connection.id}
+                  connection={connection}
+                />
+              ))
+            ) : (
+              <div className="col-span-3">
+                <EmptyState type="no-saas" />
+              </div>
+            )}
           </div>
         </div>
 

@@ -37,7 +37,24 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuToggle, className = '' }: HeaderProps) {
-  const [notificationCount, setNotificationCount] = useState(3);
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  // TODO: 実際の認証システム実装時に置き換える
+  const currentUser = {
+    name: 'システム管理者',
+    email: 'admin@company.com',
+    role: 'システム管理者',
+    avatar: null,
+  };
+
+  const getUserInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <header
@@ -109,9 +126,9 @@ export function Header({ onMenuToggle, className = '' }: HeaderProps) {
               <NavigationMenuItem>
                 <NavigationMenuTrigger className="h-auto bg-transparent p-0 hover:bg-transparent">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="/placeholder-avatar.jpg" alt="User" />
+                    <AvatarImage src={currentUser.avatar || ''} alt={currentUser.name} />
                     <AvatarFallback className="bg-blue-600 text-white">
-                      TU
+                      {getUserInitials(currentUser.name)}
                     </AvatarFallback>
                   </Avatar>
                 </NavigationMenuTrigger>
@@ -120,20 +137,20 @@ export function Header({ onMenuToggle, className = '' }: HeaderProps) {
                     <div className="mb-4 flex items-center space-x-3">
                       <Avatar className="h-10 w-10">
                         <AvatarImage
-                          src="/placeholder-avatar.jpg"
-                          alt="Test User"
+                          src={currentUser.avatar || ''}
+                          alt={currentUser.name}
                         />
                         <AvatarFallback className="bg-blue-600 text-white">
-                          TU
+                          {getUserInitials(currentUser.name)}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="text-sm font-medium">Test User</p>
+                        <p className="text-sm font-medium">{currentUser.name}</p>
                         <p className="text-xs text-gray-500">
-                          admin@example.com
+                          {currentUser.email}
                         </p>
                         <Badge variant="secondary" className="mt-1 text-xs">
-                          システム管理者
+                          {currentUser.role}
                         </Badge>
                       </div>
                     </div>

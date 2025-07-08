@@ -1,107 +1,26 @@
 'use client';
 
 import { useState } from 'react';
-import { Header } from './header';
-import { Sidebar } from './sidebar';
-import { Toaster } from '@/components/ui/toaster';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Bell, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { Toaster } from '@/components/ui/toaster';
+import { Sidebar } from './sidebar';
+import { Header } from './header';
+import { CheckCircle, AlertCircle, Clock, Bell, Activity } from 'lucide-react';
+import { useDashboardStats } from '@/hooks/useApi';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
   className?: string;
 }
 
-interface QuickStat {
-  title: string;
-  value: string;
-  change: string;
-  trend: 'up' | 'down' | 'stable';
-  color: 'blue' | 'green' | 'yellow' | 'red';
-}
-
-const quickStats: QuickStat[] = [
-  {
-    title: 'アクティブユーザー',
-    value: '127',
-    change: '+12%',
-    trend: 'up',
-    color: 'blue',
-  },
-  {
-    title: 'SaaS連携数',
-    value: '8',
-    change: '+2',
-    trend: 'up',
-    color: 'green',
-  },
-  {
-    title: '承認待ち',
-    value: '3',
-    change: '-1',
-    trend: 'down',
-    color: 'yellow',
-  },
-  {
-    title: 'エラー',
-    value: '0',
-    change: '0',
-    trend: 'stable',
-    color: 'green',
-  },
-];
-
-interface RecentActivity {
-  id: string;
-  title: string;
-  description: string;
-  time: string;
-  type: 'user' | 'saas' | 'workflow' | 'error';
-  status: 'success' | 'warning' | 'error' | 'info';
-}
-
-const recentActivities: RecentActivity[] = [
-  {
-    id: '1',
-    title: 'ユーザー追加',
-    description: '田中太郎さんがGoogle Workspaceに追加されました',
-    time: '2分前',
-    type: 'user',
-    status: 'success',
-  },
-  {
-    id: '2',
-    title: 'ワークフロー承認',
-    description: '山田花子さんのSlackアカウント作成が承認されました',
-    time: '15分前',
-    type: 'workflow',
-    status: 'success',
-  },
-  {
-    id: '3',
-    title: 'SaaS連携エラー',
-    description: 'GitHub APIの接続でエラーが発生しました',
-    time: '1時間前',
-    type: 'saas',
-    status: 'error',
-  },
-  {
-    id: '4',
-    title: 'ユーザー権限変更',
-    description: '佐藤次郎さんの権限が管理者に変更されました',
-    time: '2時間前',
-    type: 'user',
-    status: 'info',
-  },
-];
-
 export function DashboardLayout({
   children,
   className = '',
 }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const { data: stats } = useDashboardStats();
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -129,6 +48,76 @@ export function DashboardLayout({
     };
     return colorMap[color as keyof typeof colorMap] || colorMap.blue;
   };
+
+  // クイック統計の動的生成
+  const getQuickStats = () => {
+    if (!stats) return [];
+
+    return [
+      {
+        title: 'アクティブユーザー',
+        value: stats.activeUsers?.toString() || '0',
+        change: `+${((stats.activeUsers / Math.max(stats.totalUsers, 1)) * 100).toFixed(0)}%`,
+        trend: 'up' as const,
+        color: 'blue' as const,
+      },
+      {
+        title: 'SaaS連携数',
+        value: stats.totalSaasAccounts?.toString() || '0',
+        change: `+${stats.activeSaasAccounts || 0}`,
+        trend: 'up' as const,
+        color: 'green' as const,
+      },
+      {
+        title: '承認待ち',
+        value: stats.pendingWorkflows?.toString() || '0',
+        change: stats.pendingWorkflows > 0 ? '注意' : '問題なし',
+        trend:
+          stats.pendingWorkflows > 0 ? ('up' as const) : ('stable' as const),
+        color:
+          stats.pendingWorkflows > 0 ? ('yellow' as const) : ('green' as const),
+      },
+      {
+        title: 'エラー',
+        value: '0',
+        change: '0',
+        trend: 'stable' as const,
+        color: 'green' as const,
+      },
+    ];
+  };
+
+  // 最近のアクティビティの動的生成
+  const getRecentActivities = () => {
+    if (!stats?.recentActivity) return [];
+
+    return stats.recentActivity.slice(0, 4).map((activity: any) => ({
+      id: activity.id,
+      title: activity.type,
+      description: activity.description,
+      time: new Date(activity.timestamp).toLocaleString('ja-JP', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      type: getActivityType(activity.type),
+      status: activity.status,
+    }));
+  };
+
+  const getActivityType = (
+    activityType: string
+  ): 'user' | 'saas' | 'workflow' | 'error' => {
+    if (activityType.includes('ユーザー')) return 'user';
+    if (activityType.includes('SaaS') || activityType.includes('アカウント'))
+      return 'saas';
+    if (activityType.includes('ワークフロー')) return 'workflow';
+    return 'error';
+  };
+
+  const quickStats = getQuickStats();
+  const recentActivities = getRecentActivities();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -183,29 +172,36 @@ export function DashboardLayout({
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {recentActivities.map(activity => (
-                      <div
-                        key={activity.id}
-                        className="flex items-start space-x-3"
-                      >
-                        <div className="mt-1">
-                          {getStatusIcon(activity.status)}
+                  {recentActivities.length > 0 ? (
+                    <div className="space-y-4">
+                      {recentActivities.map(activity => (
+                        <div
+                          key={activity.id}
+                          className="flex items-start space-x-3"
+                        >
+                          <div className="mt-1">
+                            {getStatusIcon(activity.status)}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="truncate text-sm font-medium text-gray-900">
+                              {activity.title}
+                            </h4>
+                            <p className="mt-1 text-sm text-gray-500">
+                              {activity.description}
+                            </p>
+                            <p className="mt-1 text-xs text-gray-400">
+                              {activity.time}
+                            </p>
+                          </div>
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <h4 className="truncate text-sm font-medium text-gray-900">
-                            {activity.title}
-                          </h4>
-                          <p className="mt-1 text-sm text-gray-500">
-                            {activity.description}
-                          </p>
-                          <p className="mt-1 text-xs text-gray-400">
-                            {activity.time}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-8 text-center text-gray-500">
+                      <Activity className="mx-auto mb-2 h-8 w-8" />
+                      <p>最近のアクティビティがありません</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 

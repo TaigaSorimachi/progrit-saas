@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 // NextAuth.js Models
@@ -17,12 +17,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -82,9 +82,9 @@ model SaaSAccount {
   userId       String
   provider     String
   accountId    String
-  status       AccountStatus @default(ACTIVE)
-  permissions  Json?
-  metadata     Json?
+  status       String        @default("ACTIVE")
+  permissions  String?
+  metadata     String?
   
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   
@@ -97,11 +97,11 @@ model SaaSAccount {
 
 model WorkflowRequest {
   id          String         @id @default(cuid())
-  type        WorkflowType
+  type        String
   requesterId String
   targetUserId String
-  status      WorkflowStatus @default(PENDING)
-  data        Json
+  status      String         @default("PENDING")
+  data        String
   
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
@@ -114,32 +114,13 @@ model AuditLog {
   userId    String?
   action    String
   resource  String?
-  metadata  Json?
+  metadata  String?
   timestamp DateTime    @default(now())
   
   @@map("audit_logs")
 }
 
-// Enums
-enum AccountStatus {
-  ACTIVE
-  INACTIVE
-  SUSPENDED
-  DELETED
-}
-
-enum WorkflowType {
-  ONBOARDING
-  OFFBOARDING
-  ROLE_CHANGE
-  DEPARTMENT_CHANGE
-  PERMISSION_CHANGE
-}
-
-enum WorkflowStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  COMPLETED
-  CANCELLED
-} 
+// Note: SQLite doesn't support enums, so we use strings with constants
+// AccountStatus: "ACTIVE" | "INACTIVE" | "SUSPENDED" | "DELETED"
+// WorkflowType: "ONBOARDING" | "OFFBOARDING" | "ROLE_CHANGE" | "DEPARTMENT_CHANGE" | "PERMISSION_CHANGE"  
+// WorkflowStatus: "PENDING" | "APPROVED" | "REJECTED" | "COMPLETED" | "CANCELLED" 
