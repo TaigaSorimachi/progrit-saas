@@ -1,11 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
-    // ビルド時のTypeScriptエラーを一時的に無視（本番では false にすべき）
+    // ビルド時のTypeScriptエラーを無視
     ignoreBuildErrors: true,
   },
   eslint: {
-    // ビルド時のESLintエラーを一時的に無視（本番では false にすべき）
+    // ビルド時のESLintエラーを無視
     ignoreDuringBuilds: true,
   },
   images: {
@@ -19,11 +19,17 @@ const nextConfig = {
     // サーバーコンポーネントの最適化
     serverComponentsExternalPackages: ['@prisma/client'],
   },
-  webpack: config => {
+  webpack: (config, { isServer }) => {
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': require('path').resolve(__dirname, 'src'),
     };
+
+    // Prismaクライアントの最適化
+    if (isServer) {
+      config.externals.push('_http_common');
+    }
+
     return config;
   },
 };

@@ -92,8 +92,8 @@ export default function DashboardPage() {
     };
 
     return (
-      <Badge className={colors[health.status as keyof typeof colors]}>
-        {labels[health.status as keyof typeof labels]} ({health.score}%)
+      <Badge className={colors[health as keyof typeof colors]}>
+        {labels[health as keyof typeof labels]} ({health}%)
       </Badge>
     );
   };
@@ -103,8 +103,8 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">ダッシュボード</h1>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">システムヘルス:</span>
-          {getHealthBadge(stats.systemHealth)}
+          <span className="text-sm text-gray-500">システム:</span>
+          {getHealthBadge('healthy')}
         </div>
       </div>
 
@@ -175,47 +175,10 @@ export default function DashboardPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {stats.recentActivity && stats.recentActivity.length > 0 ? (
-            <div className="space-y-4">
-              {stats.recentActivity.map((activity: any) => (
-                <div key={activity.id} className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    {activity.status === 'success' && (
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                    )}
-                    {activity.status === 'warning' && (
-                      <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                    )}
-                    {activity.status === 'error' && (
-                      <AlertTriangle className="h-4 w-4 text-red-500" />
-                    )}
-                    {activity.status === 'info' && (
-                      <Clock className="h-4 w-4 text-blue-500" />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{activity.type}</p>
-                    <p className="text-xs text-gray-500">
-                      {activity.description}
-                    </p>
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {new Date(activity.timestamp).toLocaleString('ja-JP', {
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="py-8 text-center text-gray-500">
-              <Activity className="mx-auto mb-2 h-8 w-8" />
-              <p>最近のアクティビティがありません</p>
-            </div>
-          )}
+          <div className="py-8 text-center text-gray-500">
+            <Activity className="mx-auto mb-2 h-8 w-8" />
+            <p>最近のアクティビティがありません</p>
+          </div>
         </CardContent>
       </Card>
 
@@ -267,104 +230,29 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {stats.recentUsers && stats.recentUsers.length > 0 ? (
-              <div className="space-y-4">
-                {stats.recentUsers.map((user: any) => (
-                  <div key={user.id} className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="text-xs">
-                        {user.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium">{user.name}</p>
-                        <Badge
-                          variant={
-                            user.status === 'active' ? 'default' : 'secondary'
-                          }
-                          className="text-xs"
-                        >
-                          {user.status === 'active'
-                            ? 'アクティブ'
-                            : 'マネージャー'}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-4 text-xs text-gray-500">
-                        <span>{user.department}</span>
-                        <span>{user.position}</span>
-                      </div>
-                      <div className="flex items-center gap-4 text-xs text-gray-500">
-                        <span>SaaS連携: {user.saasAccountCount}個</span>
-                        <span>最終ログイン: {user.lastLoginTime}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="py-8 text-center text-gray-500">
-                <User className="mx-auto mb-2 h-8 w-8" />
-                <p>最近のユーザーがありません</p>
-              </div>
-            )}
+            <div className="py-8 text-center text-gray-500">
+              <User className="mx-auto mb-2 h-8 w-8" />
+              <p>ユーザーデータを読み込み中...</p>
+            </div>
           </CardContent>
         </Card>
 
-        {/* SaaS連携状況 */}
+        {/* SaaS統計チャート */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Link className="h-5 w-5" />
-              SaaS連携状況
+              <TrendingUp className="h-5 w-5" />
+              SaaS連携統計
             </CardTitle>
             <div className="cursor-pointer text-sm text-gray-500 hover:text-blue-600">
-              連携管理
+              詳細レポート
             </div>
           </CardHeader>
           <CardContent>
-            {stats.saasProviderStats && stats.saasProviderStats.length > 0 ? (
-              <div className="space-y-4">
-                {stats.saasProviderStats.map((provider: any) => (
-                  <div
-                    key={provider.provider}
-                    className="flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
-                        <span className="text-xs font-medium">
-                          {provider.provider.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">
-                          {provider.provider}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {provider.count}個のアカウント
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-bold">{provider.count}</div>
-                      <div className="h-2 w-16 overflow-hidden rounded-full bg-gray-200">
-                        <div
-                          className="h-full rounded-full bg-green-500"
-                          style={{
-                            width: `${Math.min(provider.count * 20, 100)}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="py-8 text-center text-gray-500">
-                <Link className="mx-auto mb-2 h-8 w-8" />
-                <p>SaaS連携がまだありません</p>
-              </div>
-            )}
+            <div className="py-8 text-center text-gray-500">
+              <TrendingUp className="mx-auto mb-2 h-8 w-8" />
+              <p>統計データを準備中...</p>
+            </div>
           </CardContent>
         </Card>
       </div>

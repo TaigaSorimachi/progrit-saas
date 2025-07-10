@@ -1,99 +1,56 @@
 import crypto from 'crypto';
 
-/**
- * データ暗号化・復号化ユーティリティ
- * AES-256-GCMを使用してSlack設定データを安全に保存
- */
-export class ConfigEncryption {
-  private algorithm = 'aes-256-gcm';
-  private encryptionKey: Buffer;
+const ALGORITHM = 'aes-256-gcm';
+const ENCRYPTION_KEY =
+  process.env.ENCRYPTION_KEY || 'default-dev-key-32-characters';
 
-  constructor() {
-    // 環境変数から暗号化キーを取得、なければ生成
-    const keyString = process.env.ENCRYPTION_KEY || this.generateKey();
+// 32バイトのキーを生成
+function getKey(): Buffer {
+  if (ENCRYPTION_KEY.length >= 32) {
+    return Buffer.from(ENCRYPTION_KEY.substring(0, 32), 'utf8');
+  }
+  // キーが短い場合は0で埋める
+  const key = Buffer.alloc(32);
+  Buffer.from(ENCRYPTION_KEY, 'utf8').copy(key);
+  return key;
+}
 
-    if (!process.env.ENCRYPTION_KEY) {
-      console.warn(
-        '⚠️ ENCRYPTION_KEY環境変数が設定されていません。一時的なキーを使用しています。'
-      );
-      console.warn('本番環境では必ず固定のENCRYPTION_KEYを設定してください。');
+export function encrypt(text: string): string {
+  try {
+    const key = getKey();
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipher(ALGORITHM, key);
+
+    let encrypted = cipher.update(text, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+
+    // IVと暗号化テキストを結合
+    return iv.toString('hex') + ':' + encrypted;
+  } catch (error) {
+    console.error('Encryption failed:', error);
+    throw new Error('データの暗号化に失敗しました');
+  }
+}
+
+export function decrypt(encryptedText: string): string {
+  try {
+    const key = getKey();
+    const [ivHex, encrypted] = encryptedText.split(':');
+
+    if (!ivHex || !encrypted) {
+      throw new Error('Invalid encrypted format');
     }
 
-    this.encryptionKey = Buffer.from(keyString, 'hex');
-  }
+    const iv = Buffer.from(ivHex, 'hex');
+    const decipher = crypto.createDecipher(ALGORITHM, key);
 
-  /**
-   * データを暗号化
-   */
-  encrypt(text: string): string {
-    try {
-      const iv = crypto.randomBytes(16);
-      const cipher = crypto.createCipherGCM(
-        this.algorithm,
-        this.encryptionKey,
-        iv
-      );
-      cipher.setAAD(Buffer.from('slack-config', 'utf8'));
+    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
 
-      let encrypted = cipher.update(text, 'utf8', 'hex');
-      encrypted += cipher.final('hex');
-
-      const authTag = cipher.getAuthTag();
-
-      // IV + AuthTag + 暗号化データを結合
-      return (
-        iv.toString('hex') + ':' + authTag.toString('hex') + ':' + encrypted
-      );
-    } catch (error) {
-      console.error('暗号化エラー:', error);
-      throw new Error('データの暗号化に失敗しました');
-    }
-  }
-
-  /**
-   * データを復号化
-   */
-  decrypt(encryptedData: string): string {
-    try {
-      const parts = encryptedData.split(':');
-      if (parts.length !== 3) {
-        throw new Error('無効な暗号化データ形式');
-      }
-
-      const iv = Buffer.from(parts[0], 'hex');
-      const authTag = Buffer.from(parts[1], 'hex');
-      const encrypted = parts[2];
-
-      const decipher = crypto.createDecipherGCM(
-        this.algorithm,
-        this.encryptionKey,
-        iv
-      );
-      decipher.setAAD(Buffer.from('slack-config', 'utf8'));
-      decipher.setAuthTag(authTag);
-
-      let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-      decrypted += decipher.final('utf8');
-
-      return decrypted;
-    } catch (error) {
-      console.error('復号化エラー:', error);
-      throw new Error('データの復号化に失敗しました');
-    }
-  }
-
-  /**
-   * ランダムな暗号化キーを生成
-   */
-  private generateKey(): string {
-    return crypto.randomBytes(32).toString('hex');
-  }
-
-  /**
-   * 新しい暗号化キーを生成（設定用）
-   */
-  static generateNewKey(): string {
-    return crypto.randomBytes(32).toString('hex');
+    return decrypted;
+  } catch (error) {
+    console.error('Decryption failed:', error);
+    throw new Error('データの復号化に失敗しました');
   }
 }
 

@@ -1,149 +1,75 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  MoreVertical,
-  Edit,
-  Trash2,
-  Eye,
-  Shield,
-  Users,
-  Calendar,
-  Mail,
-  Building,
-  UserCheck,
-  UserX,
-} from 'lucide-react';
-import { User } from '@/types';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { User, Mail, Building, Calendar } from 'lucide-react';
 
-interface UserCardProps {
-  user: User;
-  onEdit?: (user: User) => void;
-  onDelete?: (user: User) => void;
-  onView?: (user: User) => void;
-  onStatusChange?: (userId: string, status: User['status']) => void;
-  className?: string;
+export interface UserCardProps {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    department?: string;
+    position?: string;
+    hireDate?: string;
+    status?: string;
+  };
+  onUpdate?: () => void;
 }
 
-export function UserCard({
-  user,
-  onEdit,
-  onDelete,
-  onView,
-  onStatusChange,
-  className = '',
-}: UserCardProps) {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const getStatusBadge = (status: User['status']) => {
-    switch (status) {
-      case 'active':
-        return (
-          <Badge variant="default" className="bg-green-100 text-green-800">
-            アクティブ
-          </Badge>
-        );
-      case 'inactive':
-        return (
-          <Badge variant="secondary" className="bg-red-100 text-red-800">
-            非アクティブ
-          </Badge>
-        );
-      case 'pending':
-        return (
-          <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
-            保留中
-          </Badge>
-        );
-      default:
-        return <Badge variant="secondary">不明</Badge>;
-    }
+export function UserCard({ user, onUpdate }: UserCardProps) {
+  const handleEdit = () => {
+    // 編集機能の実装
+    console.log('Edit user:', user.id);
+    if (onUpdate) onUpdate();
   };
 
-  const getRoleBadge = (role?: User['role']) => {
-    switch (role) {
-      case 'admin':
-        return <Badge variant="destructive">管理者</Badge>;
-      case 'manager':
-        return <Badge variant="default">マネージャー</Badge>;
-      case 'user':
-        return <Badge variant="secondary">ユーザー</Badge>;
-      default:
-        return <Badge variant="secondary">不明</Badge>;
-    }
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n.charAt(0))
-      .join('')
-      .toUpperCase();
+  const handleDelete = () => {
+    // 削除機能の実装
+    console.log('Delete user:', user.id);
+    if (onUpdate) onUpdate();
   };
 
   return (
-    <Card
-      className={`transition-shadow duration-200 hover:shadow-lg ${className}`}
-    >
+    <Card className="transition-shadow hover:shadow-md">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Avatar className="h-12 w-12">
-              <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback className="bg-blue-100 font-medium text-blue-600">
-                {getInitials(user.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h3 className="font-semibold text-gray-900">{user.name}</h3>
-              <p className="text-sm text-gray-500">{user.email}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            {getStatusBadge(user.status)}
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </div>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <User className="h-5 w-5" />
+            {user.name}
+          </CardTitle>
+          <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
+            {user.status === 'active' ? 'アクティブ' : '非アクティブ'}
+          </Badge>
         </div>
       </CardHeader>
-
-      <CardContent className="pt-0">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <div className="flex items-center text-sm text-gray-600">
-              <Building className="mr-2 h-4 w-4" />
-              <span>{user.department}</span>
-            </div>
-            <div className="flex items-center text-sm text-gray-600">
-              <Shield className="mr-2 h-4 w-4" />
-              <span>{user.position}</span>
-            </div>
-            <div className="flex items-center text-sm text-gray-600">
-              <Calendar className="mr-2 h-4 w-4" />
-              <span>入社: {user.hireDate}</span>
-            </div>
+      <CardContent>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Mail className="h-4 w-4" />
+            {user.email}
           </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">権限</span>
-              {getRoleBadge(user.role)}
+          {user.department && (
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Building className="h-4 w-4" />
+              {user.department} - {user.position}
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">SaaS連携</span>
-              <Badge variant="outline">{user.saasConnections || 0}個</Badge>
+          )}
+          {user.hireDate && (
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Calendar className="h-4 w-4" />
+              入社日: {new Date(user.hireDate).toLocaleDateString('ja-JP')}
             </div>
-            <div className="flex items-center text-sm text-gray-600">
-              <Users className="mr-2 h-4 w-4" />
-              <span>最終ログイン: {user.lastActive || 'なし'}</span>
-            </div>
-          </div>
+          )}
+        </div>
+        <div className="mt-4 flex gap-2">
+          <Button size="sm" variant="outline" onClick={handleEdit}>
+            編集
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleDelete}>
+            削除
+          </Button>
         </div>
       </CardContent>
     </Card>
