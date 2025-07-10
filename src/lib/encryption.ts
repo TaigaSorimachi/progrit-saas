@@ -54,62 +54,13 @@ export function decrypt(encryptedText: string): string {
   }
 }
 
-/**
- * SlackConfig専用の暗号化ヘルパー
- */
+// Slack設定用の暗号化クラス（互換性のため）
 export class SlackConfigEncryption {
-  private encryption: ConfigEncryption;
-
-  constructor() {
-    this.encryption = new ConfigEncryption();
+  encrypt(text: string): string {
+    return encrypt(text);
   }
 
-  /**
-   * Slack設定オブジェクトを暗号化
-   */
-  encryptConfig(config: {
-    clientId: string;
-    clientSecret: string;
-    signingSecret: string;
-    botToken?: string;
-    userToken?: string;
-  }) {
-    return {
-      clientId: this.encryption.encrypt(config.clientId),
-      clientSecret: this.encryption.encrypt(config.clientSecret),
-      signingSecret: this.encryption.encrypt(config.signingSecret),
-      botToken: config.botToken
-        ? this.encryption.encrypt(config.botToken)
-        : null,
-      userToken: config.userToken
-        ? this.encryption.encrypt(config.userToken)
-        : null,
-    };
-  }
-
-  /**
-   * 暗号化されたSlack設定を復号化
-   */
-  decryptConfig(encryptedConfig: {
-    clientId: string;
-    clientSecret: string;
-    signingSecret: string;
-    botToken?: string | null;
-    userToken?: string | null;
-  }) {
-    return {
-      clientId: this.encryption.decrypt(encryptedConfig.clientId),
-      clientSecret: this.encryption.decrypt(encryptedConfig.clientSecret),
-      signingSecret: this.encryption.decrypt(encryptedConfig.signingSecret),
-      botToken: encryptedConfig.botToken
-        ? this.encryption.decrypt(encryptedConfig.botToken)
-        : undefined,
-      userToken: encryptedConfig.userToken
-        ? this.encryption.decrypt(encryptedConfig.userToken)
-        : undefined,
-    };
+  decrypt(encryptedText: string): string {
+    return decrypt(encryptedText);
   }
 }
-
-// シングルトンインスタンス
-export const slackConfigEncryption = new SlackConfigEncryption();

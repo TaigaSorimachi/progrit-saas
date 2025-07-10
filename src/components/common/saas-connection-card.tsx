@@ -18,6 +18,7 @@ import {
   Zap,
   Shield,
   Activity,
+  ExternalLink,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -35,6 +36,7 @@ interface SaaSConnectionCardProps {
   onDisconnect?: (connection: SaaSConnection) => void;
   onSync?: (connection: SaaSConnection) => void;
   onViewDetails?: (connection: SaaSConnection) => void;
+  onUpdate?: () => void;
   className?: string;
 }
 
@@ -44,6 +46,7 @@ export function SaaSConnectionCard({
   onDisconnect,
   onSync,
   onViewDetails,
+  onUpdate,
   className = '',
 }: SaaSConnectionCardProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -213,6 +216,15 @@ export function SaaSConnectionCard({
     return 'text-green-600';
   };
 
+  const handleSettings = () => {
+    console.log('Settings for:', connection.id);
+    if (onUpdate) onUpdate();
+  };
+
+  const handleView = () => {
+    console.log('View connection:', connection.id);
+  };
+
   return (
     <Card
       className={`transition-shadow duration-200 hover:shadow-lg ${className}`}
@@ -362,6 +374,16 @@ export function SaaSConnectionCard({
               style={{ width: `${connection.usagePercentage || 0}%` }}
             />
           </div>
+        </div>
+
+        <div className="mt-4 flex gap-2">
+          <Button size="sm" variant="outline" onClick={handleSettings}>
+            <Settings className="mr-1 h-4 w-4" />
+            設定
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleView}>
+            詳細
+          </Button>
         </div>
       </CardContent>
     </Card>

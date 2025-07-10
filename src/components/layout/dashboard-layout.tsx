@@ -181,10 +181,9 @@ export function DashboardLayout({
                       ))}
                     </div>
                   ) : (
-                    <div className="py-8 text-center text-gray-500">
-                      <Activity className="mx-auto mb-2 h-8 w-8" />
-                      <p>最近のアクティビティがありません</p>
-                    </div>
+                    <p className="text-muted-foreground">
+                      最近のアクティビティはありません
+                    </p>
                   )}
                 </CardContent>
               </Card>

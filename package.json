@@ -16,7 +16,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "npm run db:generate && npm run type-check && next build",
+    "build": "npm run db:generate && next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",

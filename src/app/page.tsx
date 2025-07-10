@@ -227,9 +227,10 @@ export default function Home() {
                 <UserCard key={user.id} user={user} />
               ))
             ) : (
-              <div className="col-span-2">
-                <EmptyState type="no-users" />
-              </div>
+              <EmptyState
+                title="ユーザーがいません"
+                description="最初のユーザーを追加してアカウント管理を開始しましょう。"
+              />
             )}
           </div>
         </div>
@@ -254,9 +255,10 @@ export default function Home() {
                 />
               ))
             ) : (
-              <div className="col-span-3">
-                <EmptyState type="no-saas" />
-              </div>
+              <EmptyState
+                title="SaaS連携がありません"
+                description="SaaSサービスとの連携を開始して、アカウント管理を自動化しましょう。"
+              />
             )}
           </div>
         </div>
