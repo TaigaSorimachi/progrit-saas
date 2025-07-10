@@ -1,9 +1,6 @@
 {
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["nrt1"],
+  "regions": ["hnd1"],
   "functions": {
     "src/app/api/**/*.ts": {
       "runtime": "nodejs20.x"
@@ -13,8 +10,5 @@
     "env": {
       "NODE_ENV": "production"
     }
-  },
-  "env": {
-    "SKIP_ENV_VALIDATION": "1"
   }
 }
