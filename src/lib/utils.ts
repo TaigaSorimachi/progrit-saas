@@ -5,6 +5,33 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// 環境変数の検証ユーティリティ
+export function validateEnvVars() {
+  const requiredVars = ['NEXTAUTH_SECRET'];
+  const missingVars = requiredVars.filter(varName => !process.env[varName]);
+
+  if (missingVars.length > 0) {
+    console.warn('Missing environment variables:', missingVars);
+  }
+
+  return missingVars.length === 0;
+}
+
+// データベース接続の確認
+export function isDatabaseConfigured() {
+  return Boolean(process.env.DATABASE_URL);
+}
+
+// セキュアな環境変数のデフォルト値
+export function getEnvVar(name: string, defaultValue?: string): string {
+  const value = process.env[name];
+  if (!value && !defaultValue) {
+    console.warn(`Environment variable ${name} is not set`);
+    return '';
+  }
+  return value || defaultValue || '';
+}
+
 export function formatDate(date: Date | string) {
   return new Intl.DateTimeFormat('ja-JP', {
     year: 'numeric',
@@ -104,4 +131,4 @@ export function isValidUrl(url: string) {
   } catch {
     return false;
   }
-} 
+}

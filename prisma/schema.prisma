@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // NextAuth.js Models
@@ -118,6 +118,24 @@ model AuditLog {
   timestamp DateTime    @default(now())
   
   @@map("audit_logs")
+}
+
+model SlackConfig {
+  id               String   @id @default(cuid())
+  clientId         String   // 暗号化されて保存
+  clientSecret     String   // 暗号化されて保存
+  signingSecret    String   // 暗号化されて保存
+  botToken         String?  // 暗号化されて保存
+  userToken        String?  // 暗号化されて保存
+  workspaceName    String?
+  workspaceId      String?
+  workspaceDomain  String?
+  isActive         Boolean  @default(false)
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@map("slack_configs")
 }
 
 // Note: SQLite doesn't support enums, so we use strings with constants

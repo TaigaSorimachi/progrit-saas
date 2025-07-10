@@ -153,3 +153,172 @@ export function useAuditLogs(params?: {
 
   return useApi<any[]>(url);
 }
+
+// Slack連携用フック
+export function useSlackWorkspace() {
+  return useApi<{
+    id: string;
+    name: string;
+    domain: string;
+    status: 'connected' | 'disconnected' | 'error';
+    lastSync: string;
+    memberCount: number;
+    channelCount: number;
+    adminCount: number;
+  }>('/api/slack');
+}
+
+export function useSlackUsers() {
+  return useApi<
+    {
+      id: string;
+      email: string;
+      name: string;
+      displayName: string;
+      status: 'active' | 'deactivated' | 'deleted';
+      isAdmin: boolean;
+      lastSeen: string;
+      timeZone: string;
+      profile: {
+        image: string;
+        title: string;
+        department: string;
+      };
+    }[]
+  >('/api/slack/users');
+}
+
+export function useSlackChannels() {
+  return useApi<
+    {
+      id: string;
+      name: string;
+      isPrivate: boolean;
+      memberCount: number;
+      topic: string;
+      purpose: string;
+    }[]
+  >('/api/slack/channels');
+}
+
+export function useSlackActions() {
+  return {
+    sync: useApiMutation<{ action: string }, any>('/api/slack'),
+    inviteUser: useApiMutation<
+      {
+        action: string;
+        email: string;
+        channels?: string[];
+        firstName?: string;
+        lastName?: string;
+      },
+      any
+    >('/api/slack/users'),
+    deactivateUser: useApiMutation<
+      {
+        action: string;
+        userId: string;
+      },
+      any
+    >('/api/slack/users'),
+    createChannel: useApiMutation<
+      {
+        action: string;
+        name: string;
+        isPrivate?: boolean;
+      },
+      any
+    >('/api/slack/channels'),
+    addUserToChannel: useApiMutation<
+      {
+        action: string;
+        channelId: string;
+        userId: string;
+      },
+      any
+    >('/api/slack/channels'),
+  };
+}
+
+// Slack設定管理用フック
+export function useSlackConfig() {
+  return useApi<{
+    id: string;
+    clientId: string;
+    clientSecret: string;
+    signingSecret: string;
+    botToken?: string;
+    userToken?: string;
+    workspaceName?: string;
+    workspaceId?: string;
+    workspaceDomain?: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }>('/api/slack/config');
+}
+
+export function useSlackConfigActions() {
+  return {
+    saveConfig: useApiMutation<
+      {
+        clientId: string;
+        clientSecret: string;
+        signingSecret: string;
+        botToken?: string;
+        userToken?: string;
+        workspaceName?: string;
+        workspaceId?: string;
+        workspaceDomain?: string;
+      },
+      any
+    >('/api/slack/config'),
+    updateConfig: useApiMutation<
+      {
+        id: string;
+        clientId: string;
+        clientSecret: string;
+        signingSecret: string;
+        botToken?: string;
+        userToken?: string;
+        workspaceName?: string;
+        workspaceId?: string;
+        workspaceDomain?: string;
+      },
+      any
+    >('/api/slack/config', { method: 'PUT' }),
+    deleteConfig: useApiMutation<{ id: string }, any>('/api/slack/config', {
+      method: 'DELETE',
+    }),
+    testConfig: useApiMutation<
+      {
+        clientId: string;
+        clientSecret: string;
+        signingSecret: string;
+        botToken?: string;
+        userToken?: string;
+      },
+      {
+        success: boolean;
+        tests: {
+          authTest: {
+            success: boolean;
+            message: string;
+            data?: any;
+          };
+          teamInfo: {
+            success: boolean;
+            message: string;
+            data?: any;
+          };
+          usersList: {
+            success: boolean;
+            message: string;
+            data?: any;
+          };
+        };
+        overallResult: 'success' | 'partial' | 'failed';
+      }
+    >('/api/slack/test'),
+  };
+}
