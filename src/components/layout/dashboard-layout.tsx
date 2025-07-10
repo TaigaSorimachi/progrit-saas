@@ -114,7 +114,6 @@ export function DashboardLayout({
   };
 
   const quickStats = getQuickStats();
-  const recentActivities = getRecentActivities();
 
   return (
     <div className="min-h-screen bg-gray-50">

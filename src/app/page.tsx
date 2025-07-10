@@ -270,8 +270,14 @@ export default function Home() {
             空状態テスト
           </h2>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <EmptyState type="no-users" />
-            <EmptyState type="no-saas" />
+            <EmptyState
+              title="ユーザーがいません"
+              description="最初のユーザーを追加してアカウント管理を開始しましょう。"
+            />
+            <EmptyState
+              title="SaaS連携がありません"
+              description="SaaSサービスとの連携を開始して、アカウント管理を自動化しましょう。"
+            />
           </div>
         </div>
       </div>
