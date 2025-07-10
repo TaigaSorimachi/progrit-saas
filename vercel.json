@@ -1,14 +1,3 @@
 {
-  "framework": "nextjs",
-  "regions": ["hnd1"],
-  "functions": {
-    "src/app/api/**/*.ts": {
-      "runtime": "nodejs20.x"
-    }
-  },
-  "build": {
-    "env": {
-      "NODE_ENV": "production"
-    }
-  }
+  "regions": ["hnd1"]
 }
